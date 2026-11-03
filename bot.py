@@ -73,23 +73,26 @@ def mac_tara(panel, mac):
 def arka_plan_tarayici():
     print("[*] Bulut Otonom Tarayıcı Başlatıldı ve GitHub Verileri Bekleniyor...")
     
-    # GitHub Raw Linklerin Doğrudan Entegre Edilmiş Hali
-    MAC_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/Telegram_Nirvana_Pro/02_Mac_Dosyalari/saf_001a79_maclar.txt"
-    PANEL_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/Telegram_Nirvana_Pro/06_Bulunan_Paneller/benzersiz_paneller.txt"
+    # GitHub Raw Yolları
+    MAC_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/mac_list/MAC.txt"
+    PANEL_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/panel_list/benzersiz_paneller.txt"
+    COMBO_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/combo/userpass.txt"
     
     while True:
         try:
             print("[i] GitHub'dan güncel veriler çekiliyor...")
             
+            # 1. MAC Listesini Çek
             maclar = []
             try:
                 r_mac = requests.get(MAC_RAW_URL, timeout=10)
                 if r_mac.status_code == 200:
                     maclar = [m.strip() for m in r_mac.text.splitlines() if m.strip()]
-                    print(f"[+] GitHub'dan {len(maclar)} adet saf MAC yüklendi.")
+                    print(f"[+] GitHub'dan {len(maclar)} adet MAC yüklendi.")
             except Exception as e:
                 print(f"[!] MAC'ler çekilemedi: {e}")
 
+            # 2. Panelleri Çek
             paneller = []
             try:
                 r_panel = requests.get(PANEL_RAW_URL, timeout=10)
@@ -99,18 +102,42 @@ def arka_plan_tarayici():
             except Exception as e:
                 print(f"[!] Paneller çekilemedi: {e}")
 
-            if not paneller or not maclar:
-                print("[!] Uyarı: GitHub'dan yeterli veri alınamadı, 5 dakika sonra tekrar denenecek...")
+            # 3. Combo (User/Pass) Listesini Çek
+            combolar = []
+            try:
+                r_combo = requests.get(COMBO_RAW_URL, timeout=10)
+                if r_combo.status_code == 200:
+                    for satir in r_combo.text.splitlines():
+                        satir = satir.strip()
+                        if ":" in satir:
+                            parca = satir.split(":", 1)
+                            combolar.append((parca[0].strip(), parca[1].strip()))
+                    print(f"[+] GitHub'dan {len(combolar)} adet combo (user:pass) yüklendi.")
+            except Exception as e:
+                print(f"[!] Combolar çekilemedi: {e}")
+
+            if not paneller and not maclar and not combolar:
+                print("[!] Uyarı: GitHub'dan veri alınamadı, 5 dakika sonra tekrar denenecek...")
                 time.sleep(300)
                 continue
 
-            # MAC Taramaları
-            for panel in paneller:
-                for mac in maclar:
-                    mac_tara(panel, mac)
-                    time.sleep(0.5)
+            # Önce MAC Taramaları
+            if maclar and paneller:
+                print("[i] MAC taraması başlatılıyor...")
+                for panel in paneller:
+                    for mac in maclar:
+                        mac_tara(panel, mac)
+                        time.sleep(0.3)
 
-            print("[i] Tur tamamlandı, 15 dakika sonra tekrar taranacak...")
+            # Sonra Combo (M3U) Taramaları
+            if combolar and paneller:
+                print("[i] M3U (User/Pass) taraması başlatılıyor...")
+                for panel in paneller:
+                    for user, pas in combolar:
+                        m3u_tara(panel, user, pas)
+                        time.sleep(0.3)
+
+            print("[i] Tüm turlar tamamlandı, 15 dakika sonra tekrar taranacak...")
             time.sleep(900)
 
         except Exception as e:
