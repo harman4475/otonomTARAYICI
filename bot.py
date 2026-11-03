@@ -73,9 +73,9 @@ def mac_tara(panel, mac):
 def arka_plan_tarayici():
     print("[*] Bulut Otonom Tarayıcı Başlatıldı ve GitHub Verileri Bekleniyor...")
     
-    # GitHub Raw Linklerin Doğrudan Entegre Edilmiş Hali
-    MAC_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/Telegram_Nirvana_Pro/02_Mac_Dosyalari/saf_001a79_maclar.txt"
-    PANEL_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/Telegram_Nirvana_Pro/06_Bulunan_Paneller/benzersiz_paneller.txt"
+    # Repodaki gerçek klasör ve dosya yollarına göre güncellendi:
+    MAC_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/mac_list/MAC.txt"
+    PANEL_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/panel_list/benzersiz_paneller.txt"
     
     while True:
         try:
