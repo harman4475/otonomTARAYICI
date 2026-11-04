@@ -3,3 +3,5 @@ mtr3.pro:8080
 siberiax.uk:8080
 chasintv.vip
 dragoniptv.de
+pro.moppie.eu
+darkcivi.ddns.net:80
