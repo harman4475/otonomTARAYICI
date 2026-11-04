@@ -4,3 +4,5 @@ livepptv.net:80
 orkatv.xyz
 b1iptv.de
 open.gamesdraw.com:80
+darkcivi.ddns.net:80
+trxx.in:80
