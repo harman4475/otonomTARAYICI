@@ -25,9 +25,11 @@ def telegrama_gonder(mesaj):
     try:
         url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
         data = {"chat_id": CHAT_ID, "text": mesaj, "parse_mode": "HTML"}
-        requests.post(url, data=data, timeout=10)
+        response = requests.post(url, data=data, timeout=10)
+        # Telegram'dan dönen yanıtı loglara yazdıralım ki durumu net görelim
+        print(f"[DEBUG] Telegram Yanıtı: {response.status_code} - {response.text}")
     except Exception as e:
-        print(f"[!] Telegram mesajı gönderilemedi: {e}")
+        print(f"[!] Telegram mesajı gönderilemedi (Hata Detayı): {e}")
 
 def m3u_tara(panel, user, pas):
     api_url = f"http://{panel}/player_api.php?username={user}&password={pas}"
@@ -85,19 +87,4 @@ def arka_plan_tarayici():
     
     while True:
         try:
-            print("[i] Tarama turu dönüyor...")
-            # Tarama mantığı burada dönecek
-            # GitHub'a yeni liste attığında botun onları çekmesi için rawlink kullanılabilir
-            
-            time.sleep(1800) # 30 dk bekleme
-        except Exception as e:
-            print(f"[!] Hata: {e}")
-            time.sleep(60)
-
-if __name__ == '__main__':
-    # Flask sunucusunu ayrı bir thread'de (arkada) çalıştır
-    t = threading.Thread(target=run_web)
-    t.start()
-    
-    # Tarayıcı döngüsünü başlat
-    arka_plan_tarayici()
+            print("[i] Tarama turu
