@@ -8,8 +8,6 @@ darkcivi.ddns.net:80
 febxp.candymarta.com:80
 51.222.111.105:25461
 frutta.selfip.co:80
-onep01.asia:80
-http://',
 http://0.fixedurl.cc:80
 http://00-1212.com:8080
 http://00.1234.tn:8000
@@ -10050,37 +10048,6 @@ http://line.clear-ocean.link:80
 http://line.clear-ocean.link:80 
 http://line.cloud-ott.net
 http://line.cloud-ott.net:80
-http://line.cloud-ott.net:80,00:1A:79:08:53:BE
-http://line.cloud-ott.net:80,00:1A:79:19:44:33
-http://line.cloud-ott.net:80,00:1A:79:1C:0B:03
-http://line.cloud-ott.net:80,00:1A:79:26:60:48
-http://line.cloud-ott.net:80,00:1A:79:3D:87:E0
-http://line.cloud-ott.net:80,00:1A:79:3D:88:09
-http://line.cloud-ott.net:80,00:1A:79:3D:B8:70
-http://line.cloud-ott.net:80,00:1A:79:3D:B8:A4
-http://line.cloud-ott.net:80,00:1A:79:46:B7:1C
-http://line.cloud-ott.net:80,00:1A:79:7E:1B:D9
-http://line.cloud-ott.net:80,00:1A:79:84:EC:94
-http://line.cloud-ott.net:80,00:1A:79:AF:34:9D
-http://line.cloud-ott.net:80,00:1A:79:BF:DF:12
-http://line.cloud-ott.net:80,00:1A:79:F1:F3:7B
-http://line.cloud-ott.net:80,00:1A:79:F5:CC:E6
-http://line.cloud-ott.net:80,00:1A:79:F5:CC:FF
-http://line.cloud-ott.net:80,00:1A:79:FB:24:A4
-http://line.cloud-ott.net:80,00:1B:79:33:3b:75
-http://line.cloud-ott.net:80,00:1B:79:44:16:6A
-http://line.cloud-ott.net:80,00:1B:79:4A:62:20
-http://line.cloud-ott.net:80,00:1B:79:F8:A9:EA
-http://line.cloud-ott.net:80,A0:BB:3E:00:08:4F
-http://line.cloud-ott.net:80,A0:BB:3E:00:08:B8
-http://line.cloud-ott.net:80,A0:BB:3E:00:17:85
-http://line.cloud-ott.net:80,A0:BB:3E:00:17:BE
-http://line.cloud-ott.net:80,A0:BB:3E:00:17:F4
-http://line.cloud-ott.net:80,A0:BB:3E:03:87:5F
-http://line.cloud-ott.net:80,A0:BB:3E:03:B0:05
-http://line.cloud-ott.net:80,A0:BB:3E:03:B0:B1
-http://line.cloud-ott.net:80,A0:BB:3E:5C:50:90
-http://line.cloud-ott.net:80,A0:BB:3E:80:75:51
 http://line.crystal-ott.com
 http://line.crystal-ott.com:80
 http://line.crystal90.com
@@ -11529,7 +11496,7 @@ http://metinmedia.xyz:8080
 http://metitv.xyz:8080
 http://metome.xyz:80
 http://metronet-fiber.com:8080
-http://metronet-fiber.com:8080 yaptrcan
+http://metronet-fiber.com:8080
 http://metropoliptv.com:3800
 http://metropolvip.xyz
 http://metropolvip.xyz:3800
@@ -13205,71 +13172,10 @@ http://p1.proiptv.co:88
 http://p1.reborntech.ch:25461
 http://p1.ttvns.com
 http://p11.roomblue.eu:8080
-http://p2.
 http://p2.hostinggonemoreso1.com:2082
 http://p2.infraz.top:80
 http://p2.iptvprivateserver.ru
 http://p2.iptvprivateserver.tv
-http://p2.iptvprivateserver.tv | 00:1A:79:15:3C:A2
-http://p2.iptvprivateserver.tv | 00:1A:79:24:F6:5A
-http://p2.iptvprivateserver.tv | 00:1A:79:24:F8:B2
-http://p2.iptvprivateserver.tv | 00:1A:79:27:38:41
-http://p2.iptvprivateserver.tv | 00:1A:79:2B:54:35
-http://p2.iptvprivateserver.tv | 00:1A:79:2D:5E:12
-http://p2.iptvprivateserver.tv | 00:1A:79:2F:E3:73
-http://p2.iptvprivateserver.tv | 00:1A:79:30:BE:13
-http://p2.iptvprivateserver.tv | 00:1A:79:33:4F:E5
-http://p2.iptvprivateserver.tv | 00:1A:79:34:4F:1E
-http://p2.iptvprivateserver.tv | 00:1A:79:35:34:33
-http://p2.iptvprivateserver.tv | 00:1A:79:37:A9:0D
-http://p2.iptvprivateserver.tv | 00:1A:79:39:33:32
-http://p2.iptvprivateserver.tv | 00:1A:79:3B:06:C5
-http://p2.iptvprivateserver.tv | 00:1A:79:3E:BC:FA
-http://p2.iptvprivateserver.tv | 00:1A:79:40:13:A6
-http://p2.iptvprivateserver.tv | 00:1A:79:40:27:2B
-http://p2.iptvprivateserver.tv | 00:1A:79:45:58:90
-http://p2.iptvprivateserver.tv | 00:1A:79:52:0F:B0
-http://p2.iptvprivateserver.tv | 00:1A:79:56:4D:83
-http://p2.iptvprivateserver.tv | 00:1A:79:57:D7:95
-http://p2.iptvprivateserver.tv | 00:1A:79:58:ED:DA
-http://p2.iptvprivateserver.tv | 00:1A:79:6C:28:90
-http://p2.iptvprivateserver.tv | 00:1A:79:6C:8A:EC
-http://p2.iptvprivateserver.tv | 00:1A:79:78:50:B9
-http://p2.iptvprivateserver.tv | 00:1A:79:7C:C0:7A
-http://p2.iptvprivateserver.tv | 00:1A:79:97:BA:96
-http://p2.iptvprivateserver.tv | 00:1A:79:A2:E5:26
-http://p2.iptvprivateserver.tv | 00:1A:79:A3:CF:91
-http://p2.iptvprivateserver.tv | 00:1A:79:A4:18:28
-http://p2.iptvprivateserver.tv | 00:1A:79:A5:15:AE
-http://p2.iptvprivateserver.tv | 00:1A:79:A6:24:B8
-http://p2.iptvprivateserver.tv | 00:1A:79:A6:4D:A2
-http://p2.iptvprivateserver.tv | 00:1A:79:AA:4F:36
-http://p2.iptvprivateserver.tv | 00:1A:79:AA:62:A0
-http://p2.iptvprivateserver.tv | 00:1A:79:AF:0C:4E
-http://p2.iptvprivateserver.tv | 00:1A:79:AF:E0:E5
-http://p2.iptvprivateserver.tv | 00:1A:79:B4:64:D8
-http://p2.iptvprivateserver.tv | 00:1A:79:B4:D4:78
-http://p2.iptvprivateserver.tv | 00:1A:79:B6:E3:F4
-http://p2.iptvprivateserver.tv | 00:1A:79:B6:FF:9C
-http://p2.iptvprivateserver.tv | 00:1A:79:B7:A3:3A
-http://p2.iptvprivateserver.tv | 00:1A:79:B7:BB:A6
-http://p2.iptvprivateserver.tv | 00:1A:79:B8:29:A0
-http://p2.iptvprivateserver.tv | 00:1A:79:B9:43:11
-http://p2.iptvprivateserver.tv | 00:1A:79:BF:14:EE
-http://p2.iptvprivateserver.tv | 00:1A:79:BF:16:C6
-http://p2.iptvprivateserver.tv | 00:1A:79:C0:93:28
-http://p2.iptvprivateserver.tv | 00:1A:79:C3:66:EC
-http://p2.iptvprivateserver.tv | 00:1A:79:C6:6B:41
-http://p2.iptvprivateserver.tv | 00:1A:79:C6:8B:31
-http://p2.iptvprivateserver.tv | 00:1A:79:CA:94:11
-http://p2.iptvprivateserver.tv | 00:1A:79:CE:EE:16
-http://p2.iptvprivateserver.tv | 00:1A:79:CF:69:E9
-http://p2.iptvprivateserver.tv | 00:1A:79:D2:0D:E1
-http://p2.iptvprivateserver.tv | 00:1A:79:D4:F3:59
-http://p2.iptvprivateserver.tv | 00:1A:79:D5:66:0A
-http://p2.iptvprivateserver.tv | 00:1A:79:E5:C3:8E
-http://p2.iptvprivateserver.tv | 00:1A:79:E5:D2:25
-http://p2.iptvprivateserver.tv | 00:1A:79:F2:C7:C1
 http://p2cine1.life:80
 http://p2cineshow.fun:80
 http://p2flix.fun:80
@@ -13287,10 +13193,6 @@ http://p2xsmart.xyz:80
 http://p3.iptvprivateserver.tv
 http://p3.proiptv.co:88
 http://p4.iptvprivateserver.tv
-http://p4.iptvprivateserver.tv;00:1A:79:58:0F:CC;June
-http://p4.iptvprivateserver.tv;00:1A:79:BE:1B:14;September
-http://p4.iptvprivateserver.tv;00:1A:79:C5:1A:91;December
-http://p4.iptvprivateserver.tv;00:1A:79:E5:CC:FD;November
 http://p4nel.p4nel.com:2086
 http://p5.iptvprivateserver.tv
 http://p6.iptvprivateserver.ru:80
@@ -13411,7 +13313,7 @@ http://parh.rtrs.tv
 http://parhamtv.live:80
 http://paris.bestipbox.com:8000
 http://parispars.xyz:8080
-http://parispars.xyz:8080 yani nedir acaba iyi geceler
+http://parispars.xyz:8080
 http://paristv.pro:8080
 http://paristvs.xyz:80
 http://parisworld.xyz:8080
@@ -13423,8 +13325,7 @@ http://pars01.com:8080
 http://pars01.live
 http://pars01.live:8080
 http://parsangel.xyz:8080
-http://parsdaytime.xyz arkadalar bu gene degimi yan varmdr rica etsem
-http://parsdaytime.xyz:8080
+http://parsdaytime.xyz 
 http://parstv.live:8080
 http://parstv.pro:8080
 http://pascalkovenking.streamtv.to:8080
@@ -13901,7 +13802,7 @@ http://poyraz67.com:8080
 http://poyrazpro24.xyz:8080
 http://poyrazvip77.xyz:8080
 http://pp.firegamers.me:80
-http://pp.firegamers.me:80__****__
+http://pp.firegamers.me:80
 http://pp.meupainel.xyz:80
 http://pp.prison2break.xyz:8080
 http://pp.prison8break.com:8080
@@ -14005,7 +13906,7 @@ http://premiumtop.top:8080
 http://premiumtv.ink:80
 http://premiumtv.me:8000
 http://premiumtv.pro:8080
-http://premiumtv.pro:8080 Efe
+http://premiumtv.pro:8080
 http://premiumtv.space:80
 http://premiumtvs.net:8080
 http://premiumultra.xyz:8080
@@ -14045,7 +13946,7 @@ http://prime.casacam.net:80
 http://prime4k.co:80
 http://prime8k.co:80
 http://primecasttv.online:80
-http://primehub@nefertv.xyz:8080 bu titan ustalar nefertv,,,,,, tabiiki bu hikaye primehub@
+http://primehub@nefertv.xyz:8080
 http://primestreammedia.online:80
 http://primestreams.tv
 http://primestreams.tv:826
@@ -14106,240 +14007,6 @@ http://pro.8k-strong.tv:80!!!
 http://pro.8k.yachts:80
 http://pro.abct.shop
 http://pro.abct.shop:80
-http://pro.abct.shop|00:1A:79:00:06:63
-http://pro.abct.shop|00:1A:79:00:12:54
-http://pro.abct.shop|00:1A:79:00:13:B7
-http://pro.abct.shop|00:1A:79:00:15:87
-http://pro.abct.shop|00:1A:79:00:18:51
-http://pro.abct.shop|00:1A:79:00:5D:8B
-http://pro.abct.shop|00:1A:79:00:DF:BE
-http://pro.abct.shop|00:1A:79:02:56:A9
-http://pro.abct.shop|00:1A:79:04:10:A6
-http://pro.abct.shop|00:1A:79:05:67:40
-http://pro.abct.shop|00:1A:79:05:BE:5B
-http://pro.abct.shop|00:1A:79:07:B3:D8
-http://pro.abct.shop|00:1A:79:07:C5:B7
-http://pro.abct.shop|00:1A:79:08:52:C8
-http://pro.abct.shop|00:1A:79:0A:07:F1
-http://pro.abct.shop|00:1A:79:0A:D9:0A
-http://pro.abct.shop|00:1A:79:0C:3F:43
-http://pro.abct.shop|00:1A:79:0C:3F:9C
-http://pro.abct.shop|00:1A:79:0C:42:AE
-http://pro.abct.shop|00:1A:79:0E:5A:25
-http://pro.abct.shop|00:1A:79:0E:9F:57
-http://pro.abct.shop|00:1A:79:0F:CD:34
-http://pro.abct.shop|00:1A:79:10:83:23
-http://pro.abct.shop|00:1A:79:15:1A:01
-http://pro.abct.shop|00:1A:79:16:10:EE
-http://pro.abct.shop|00:1A:79:18:53:32
-http://pro.abct.shop|00:1A:79:19:F1:71
-http://pro.abct.shop|00:1A:79:1A:32:52
-http://pro.abct.shop|00:1A:79:1D:03:F8
-http://pro.abct.shop|00:1A:79:20:13:F9
-http://pro.abct.shop|00:1A:79:22:00:E4
-http://pro.abct.shop|00:1A:79:24:83:A2
-http://pro.abct.shop|00:1A:79:24:FB:A4
-http://pro.abct.shop|00:1A:79:27:D2:13
-http://pro.abct.shop|00:1A:79:27:FB:BC
-http://pro.abct.shop|00:1A:79:28:75:98
-http://pro.abct.shop|00:1A:79:29:50:E8
-http://pro.abct.shop|00:1A:79:2A:5E:5D
-http://pro.abct.shop|00:1A:79:2B:7C:47
-http://pro.abct.shop|00:1A:79:2B:95:57
-http://pro.abct.shop|00:1A:79:30:21:30
-http://pro.abct.shop|00:1A:79:32:32:65
-http://pro.abct.shop|00:1A:79:33:38:65
-http://pro.abct.shop|00:1A:79:33:64:D7
-http://pro.abct.shop|00:1A:79:37:0E:E9
-http://pro.abct.shop|00:1A:79:38:27:D3
-http://pro.abct.shop|00:1A:79:3A:99:F2
-http://pro.abct.shop|00:1A:79:3D:C7:B4
-http://pro.abct.shop|00:1A:79:3D:CE:FA
-http://pro.abct.shop|00:1A:79:3E:5F:FA
-http://pro.abct.shop|00:1A:79:3E:A8:AF
-http://pro.abct.shop|00:1A:79:42:AF:61
-http://pro.abct.shop|00:1A:79:43:AB:9C
-http://pro.abct.shop|00:1A:79:47:99:39
-http://pro.abct.shop|00:1A:79:47:CE:9B
-http://pro.abct.shop|00:1A:79:48:60:C5
-http://pro.abct.shop|00:1A:79:48:B4:18
-http://pro.abct.shop|00:1A:79:4D:0F:A5
-http://pro.abct.shop|00:1A:79:4E:6D:10
-http://pro.abct.shop|00:1A:79:50:DA:85
-http://pro.abct.shop|00:1A:79:51:A4:7A
-http://pro.abct.shop|00:1A:79:51:EC:74
-http://pro.abct.shop|00:1A:79:52:34:F3
-http://pro.abct.shop|00:1A:79:53:5E:D1
-http://pro.abct.shop|00:1A:79:55:EA:61
-http://pro.abct.shop|00:1A:79:57:8A:61
-http://pro.abct.shop|00:1A:79:59:25:6E
-http://pro.abct.shop|00:1A:79:5B:15:D0
-http://pro.abct.shop|00:1A:79:5C:F0:7C
-http://pro.abct.shop|00:1A:79:5E:8E:7A
-http://pro.abct.shop|00:1A:79:5F:53:E6
-http://pro.abct.shop|00:1A:79:61:1B:25
-http://pro.abct.shop|00:1A:79:61:A3:5A
-http://pro.abct.shop|00:1A:79:62:61:38
-http://pro.abct.shop|00:1A:79:63:33:EE
-http://pro.abct.shop|00:1A:79:63:5C:3A
-http://pro.abct.shop|00:1A:79:64:62:31
-http://pro.abct.shop|00:1A:79:64:AA:CA
-http://pro.abct.shop|00:1A:79:65:43:B6
-http://pro.abct.shop|00:1A:79:66:1B:48
-http://pro.abct.shop|00:1A:79:66:8B:5A
-http://pro.abct.shop|00:1A:79:67:AD:55
-http://pro.abct.shop|00:1A:79:67:DD:90
-http://pro.abct.shop|00:1A:79:68:D0:73
-http://pro.abct.shop|00:1A:79:69:54:5D
-http://pro.abct.shop|00:1A:79:6C:1E:85
-http://pro.abct.shop|00:1A:79:6C:DE:48
-http://pro.abct.shop|00:1A:79:6D:F8:A1
-http://pro.abct.shop|00:1A:79:6E:2B:EE
-http://pro.abct.shop|00:1A:79:6F:31:6F
-http://pro.abct.shop|00:1A:79:70:3B:69
-http://pro.abct.shop|00:1A:79:70:48:F8
-http://pro.abct.shop|00:1A:79:70:E7:EF
-http://pro.abct.shop|00:1A:79:71:35:92
-http://pro.abct.shop|00:1A:79:71:48:EC
-http://pro.abct.shop|00:1A:79:71:56:34
-http://pro.abct.shop|00:1A:79:71:B5:81
-http://pro.abct.shop|00:1A:79:72:2E:17
-http://pro.abct.shop|00:1A:79:72:42:DE
-http://pro.abct.shop|00:1A:79:72:47:A8
-http://pro.abct.shop|00:1A:79:72:6B:EA
-http://pro.abct.shop|00:1A:79:73:DC:42
-http://pro.abct.shop|00:1A:79:74:2C:28
-http://pro.abct.shop|00:1A:79:74:2D:75
-http://pro.abct.shop|00:1A:79:74:C5:C0
-http://pro.abct.shop|00:1A:79:75:04:5B
-http://pro.abct.shop|00:1A:79:75:3C:B8
-http://pro.abct.shop|00:1A:79:76:06:C7
-http://pro.abct.shop|00:1A:79:76:A5:37
-http://pro.abct.shop|00:1A:79:76:EE:91
-http://pro.abct.shop|00:1A:79:77:0C:56
-http://pro.abct.shop|00:1A:79:79:2F:8E
-http://pro.abct.shop|00:1A:79:7A:04:1B
-http://pro.abct.shop|00:1A:79:7A:B3:BB
-http://pro.abct.shop|00:1A:79:7B:1D:F3
-http://pro.abct.shop|00:1A:79:7B:61:EC
-http://pro.abct.shop|00:1A:79:7B:B1:A8
-http://pro.abct.shop|00:1A:79:7B:C2:1E
-http://pro.abct.shop|00:1A:79:7B:EB:A9
-http://pro.abct.shop|00:1A:79:7C:28:0D
-http://pro.abct.shop|00:1A:79:7C:80:56
-http://pro.abct.shop|00:1A:79:7C:B7:DF
-http://pro.abct.shop|00:1A:79:7D:55:0E
-http://pro.abct.shop|00:1A:79:7D:98:CB
-http://pro.abct.shop|00:1A:79:7D:F6:95
-http://pro.abct.shop|00:1A:79:7E:2A:5F
-http://pro.abct.shop|00:1A:79:7E:60:B3
-http://pro.abct.shop|00:1A:79:7F:22:62
-http://pro.abct.shop|00:1A:79:7F:45:F0
-http://pro.abct.shop|00:1A:79:80:87:A3
-http://pro.abct.shop|00:1A:79:80:D7:EB
-http://pro.abct.shop|00:1A:79:81:A1:6D
-http://pro.abct.shop|00:1A:79:82:0B:79
-http://pro.abct.shop|00:1A:79:82:15:39
-http://pro.abct.shop|00:1A:79:82:7D:BB
-http://pro.abct.shop|00:1A:79:82:9C:9F
-http://pro.abct.shop|00:1A:79:82:DF:AB
-http://pro.abct.shop|00:1A:79:82:FC:16
-http://pro.abct.shop|00:1A:79:82:FF:13
-http://pro.abct.shop|00:1A:79:84:BC:C7
-http://pro.abct.shop|00:1A:79:85:3C:FE
-http://pro.abct.shop|00:1A:79:85:79:AC
-http://pro.abct.shop|00:1A:79:85:9D:81
-http://pro.abct.shop|00:1A:79:86:17:21
-http://pro.abct.shop|00:1A:79:86:18:E6
-http://pro.abct.shop|00:1A:79:86:55:96
-http://pro.abct.shop|00:1A:79:87:34:A3
-http://pro.abct.shop|00:1A:79:87:90:54
-http://pro.abct.shop|00:1A:79:87:C6:A1
-http://pro.abct.shop|00:1A:79:88:7C:D6
-http://pro.abct.shop|00:1A:79:89:E5:D6
-http://pro.abct.shop|00:1A:79:8B:01:FF
-http://pro.abct.shop|00:1A:79:8D:C3:A2
-http://pro.abct.shop|00:1A:79:8F:C5:63
-http://pro.abct.shop|00:1A:79:98:36:05
-http://pro.abct.shop|00:1A:79:9A:A6:5E
-http://pro.abct.shop|00:1A:79:A2:34:37
-http://pro.abct.shop|00:1A:79:A2:E4:59
-http://pro.abct.shop|00:1A:79:A3:CB:90
-http://pro.abct.shop|00:1A:79:A3:F0:D3
-http://pro.abct.shop|00:1A:79:A4:60:53
-http://pro.abct.shop|00:1A:79:A6:39:03
-http://pro.abct.shop|00:1A:79:A6:9D:0E
-http://pro.abct.shop|00:1A:79:A6:F4:6D
-http://pro.abct.shop|00:1A:79:A7:E9:DF
-http://pro.abct.shop|00:1A:79:A8:14:58
-http://pro.abct.shop|00:1A:79:AB:C5:8B
-http://pro.abct.shop|00:1A:79:AE:C5:15
-http://pro.abct.shop|00:1A:79:AF:0D:14
-http://pro.abct.shop|00:1A:79:AF:1C:37
-http://pro.abct.shop|00:1A:79:AF:68:FA
-http://pro.abct.shop|00:1A:79:AF:6A:CF
-http://pro.abct.shop|00:1A:79:B0:A1:71
-http://pro.abct.shop|00:1A:79:B3:C6:70
-http://pro.abct.shop|00:1A:79:B4:F0:5F
-http://pro.abct.shop|00:1A:79:B4:F8:99
-http://pro.abct.shop|00:1A:79:B5:7B:DD
-http://pro.abct.shop|00:1A:79:B5:B0:87
-http://pro.abct.shop|00:1A:79:B5:E5:EF
-http://pro.abct.shop|00:1A:79:B5:EA:3D
-http://pro.abct.shop|00:1A:79:B6:F3:AD
-http://pro.abct.shop|00:1A:79:B7:02:D0
-http://pro.abct.shop|00:1A:79:B7:04:C6
-http://pro.abct.shop|00:1A:79:B8:B8:B1
-http://pro.abct.shop|00:1A:79:BB:E9:F1
-http://pro.abct.shop|00:1A:79:BD:BB:CA
-http://pro.abct.shop|00:1A:79:BD:F8:19
-http://pro.abct.shop|00:1A:79:BF:56:31
-http://pro.abct.shop|00:1A:79:C0:6F:5A
-http://pro.abct.shop|00:1A:79:C1:33:10
-http://pro.abct.shop|00:1A:79:C1:35:73
-http://pro.abct.shop|00:1A:79:C1:AD:5E
-http://pro.abct.shop|00:1A:79:C2:33:6A
-http://pro.abct.shop|00:1A:79:C3:18:FE
-http://pro.abct.shop|00:1A:79:C3:5A:B7
-http://pro.abct.shop|00:1A:79:C3:DF:AF
-http://pro.abct.shop|00:1A:79:C4:1F:F9
-http://pro.abct.shop|00:1A:79:C5:17:B0
-http://pro.abct.shop|00:1A:79:C5:21:E4
-http://pro.abct.shop|00:1A:79:C5:29:E7
-http://pro.abct.shop|00:1A:79:C5:FB:2B
-http://pro.abct.shop|00:1A:79:C6:F4:65
-http://pro.abct.shop|00:1A:79:C7:2A:55
-http://pro.abct.shop|00:1A:79:C7:CC:C4
-http://pro.abct.shop|00:1A:79:C8:6F:A8
-http://pro.abct.shop|00:1A:79:CA:41:23
-http://pro.abct.shop|00:1A:79:CA:50:CC
-http://pro.abct.shop|00:1A:79:CD:E1:53
-http://pro.abct.shop|00:1A:79:CE:56:62
-http://pro.abct.shop|00:1A:79:CF:67:FD
-http://pro.abct.shop|00:1A:79:CF:89:7D
-http://pro.abct.shop|00:1A:79:D2:B7:CF
-http://pro.abct.shop|00:1A:79:D2:D5:A8
-http://pro.abct.shop|00:1A:79:D4:6B:CE
-http://pro.abct.shop|00:1A:79:D5:0B:CF
-http://pro.abct.shop|00:1A:79:D5:70:CD
-http://pro.abct.shop|00:1A:79:D5:DC:6F
-http://pro.abct.shop|00:1A:79:D6:8F:9E
-http://pro.abct.shop|00:1A:79:D8:49:44
-http://pro.abct.shop|00:1A:79:DC:A9:D0
-http://pro.abct.shop|00:1A:79:E0:64:00
-http://pro.abct.shop|00:1A:79:E5:9E:8D
-http://pro.abct.shop|00:1A:79:E6:1E:40
-http://pro.abct.shop|00:1A:79:E7:7F:EF
-http://pro.abct.shop|00:1A:79:E8:45:24
-http://pro.abct.shop|00:1A:79:EA:7F:36
-http://pro.abct.shop|00:1A:79:F1:E6:66
-http://pro.abct.shop|00:1A:79:F2:62:65
-http://pro.abct.shop|00:1A:79:F5:39:24
-http://pro.abct.shop|00:1A:79:F5:55:5D
-http://pro.abct.shop|00:1A:79:F8:6A:29
-http://pro.abct.shop|00:1A:79:FA:5A:01
-http://pro.abct.shop|00:1A:79:FD:7C:89
-http://pro.abct.shop|00:1A:79:FF:B8:B6
 http://pro.avrupatv.online:8080 
 http://pro.besthd.eu:80
 http://pro.besthd.eu:8080
@@ -20124,8 +19791,7 @@ http://y75snt.dynu.net:8080
 http://y7hh8j.novosss.com:80
 http://y87k.xyz:80
 http://ya-rab.lol:80
-http://ya.cc
-http://ya.pingtx.me
+http://ya.cchttp://ya.pingtx.me
 http://ya.pingtx.me:80
 http://yabancidizi.vip
 http://yachttv.win:80
@@ -20270,7 +19936,7 @@ http://z.xzzz.vip:80
 http://z.zcatt.cc
 http://z.zkat.me:80
 http://z1.babo01.com:8080
-http://z1.babo01.com:8080|00:1A:79:19:23:D1
+http://z1.babo01.com:8080
 http://z1.mxtx.in:80
 http://z1mac.com:8080
 http://z1mag.xyz:8080
@@ -20353,7 +20019,7 @@ http://zeroonemac1.xyz:8080
 http://zeroonex1.com:8080
 http://zeroonex2.xyz:8080
 http://zerotv.eu:8080
-http://zerotv.eu:8080.
+http://zerotv.eu:8080
 http://zerourl.com:80
 http://zerox12.xyz:8080
 http://zertytv.org
