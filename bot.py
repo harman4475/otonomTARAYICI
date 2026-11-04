@@ -1,6 +1,5 @@
 import os
 import time
-import threading
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
@@ -14,9 +13,6 @@ app = Flask('')
 def home():
     return "IPTV Bot Aktif ve 7/24 Bulutta Çalışıyor!"
 
-def run_web():
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
-
 # --- TELEGRAM AYARLARI ---
 TOKEN = "9296501081:AAGTNmvWB8Qn8-kVxGNoJcC8LXTLb8lnZ94"
 CHAT_ID = "39743305"
@@ -25,11 +21,12 @@ def telegrama_gonder(mesaj):
     try:
         url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
         data = {"chat_id": CHAT_ID, "text": mesaj, "parse_mode": "HTML"}
+        print(f"[DEBUG] Telegram'a istek atılıyor... Chat ID: {CHAT_ID}")
         response = requests.post(url, data=data, timeout=10)
-        # Telegram'dan dönen yanıtı loglara yazdıralım ki durumu net görelim
-        print(f"[DEBUG] Telegram Yanıtı: {response.status_code} - {response.text}")
+        print(f"[DEBUG] Telegram Yanıt Kodu: {response.status_code}")
+        print(f"[DEBUG] Telegram Yanıt İçeriği: {response.text}")
     except Exception as e:
-        print(f"[!] Telegram mesajı gönderilemedi (Hata Detayı): {e}")
+        print(f"[!] Telegram mesajı gönderilemedi (Kritik Hata): {e}")
 
 def m3u_tara(panel, user, pas):
     api_url = f"http://{panel}/player_api.php?username={user}&password={pas}"
@@ -74,17 +71,29 @@ def mac_tara(panel, mac):
 
 def arka_plan_tarayici():
     print("[*] Bulut Otonom Tarayıcı Başlatıldı...")
+    time.sleep(3) # Sistem kendine gelsin diye minik bekleme
     
-    # Render'da bot ayağa kalktığı an Telegram'a düşecek başlangıç bildirimi
+    # Başlangıç bildirimi
     telegrama_gonder("🚀 <b>Bulut Otonom Tarayıcı Başlatıldı ve Aktif!</b>\n⏳ Tarama döngüsü devrede.")
         
-    # Not: Render'da listeleri doğrudan GitHub'daki dosyalardan okutabilir 
-    # veya buraya örnek paneller/combo listeleri ekleyebilirsin.
-    # Örnek test listeleri:
     paneller = ["ornekpanel.com:8080"] 
     combos = []
     maclar = []
     
     while True:
         try:
-            print("[i] Tarama turu
+            print("[i] Tarama turu dönüyor...")
+            time.sleep(1800) # 30 dk bekleme
+        except Exception as e:
+            print(f"[!] Hata: {e}")
+            time.sleep(60)
+
+if __name__ == '__main__':
+    # Önce tarayıcıyı ayrı bir thread'de başlatıyoruz ki Flask'ı bloklamasın
+    import threading
+    t = threading.Thread(target=arka_plan_tarayici)
+    t.daemon = True
+    t.start()
+    
+    print("[*] Flask Web Sunucusu Başlatılıyor...")
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
