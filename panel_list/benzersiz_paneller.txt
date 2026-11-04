@@ -3,3 +3,4 @@ tr.felixtv.cfd:8080
 livepptv.net:80
 orkatv.xyz
 b1iptv.de
+open.gamesdraw.com:80
