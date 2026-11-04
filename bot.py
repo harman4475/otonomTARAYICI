@@ -6,7 +6,6 @@ import requests
 from flask import Flask
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-# SSL ve Cipher yapılandırması
 requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = "TLS_AES_128_GCM_SHA256:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_256_GCM_SHA384:TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256:TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256:TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256:TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA:TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA:TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA:TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA:TLS_RSA_WITH_AES_128_GCM_SHA256:TLS_RSA_WITH_AES_256_GCM_SHA384:TLS_RSA_WITH_AES_128_CBC_SHA:TLS_RSA_WITH_AES_256_CBC_SHA:TLS_RSA_WITH_3DES_EDE_CBC_SHA:TLS13-CHACHA20-POLY1305-SHA256:TLS13-AES-128-GCM-SHA256:TLS13-AES-256-GCM-SHA384:ECDHE:!COMP:TLS13-AES-256-GCM-SHA384:TLS13-CHACHA20-POLY1305-SHA256:TLS13-AES-128-GCM-SHA256"
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
@@ -19,7 +18,6 @@ def home():
 def run_web():
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
 
-# --- TELEGRAM BİLDİRİM AYARLARI ---
 TOKEN = "9296501081:AAG8COydawvxX-TfAEArbG-SdEtliP6WODM"
 CHAT_ID = "-1003901042500"
 
@@ -142,9 +140,11 @@ def arka_plan_tarayici():
                 pass
 
             if not paneller and not maclar and not combolar:
+                telegrama_gonder("⚠️ <b>GitHub'dan veri okunamadı, liste boş!</b>")
                 time.sleep(120)
                 continue
 
+            # MAC Tarama Kontrolü
             if maclar and paneller:
                 telegrama_gonder("⏳ <b>MAC tarama başlatıldı</b>")
                 for panel in paneller:
@@ -152,7 +152,10 @@ def arka_plan_tarayici():
                         mac_tara(panel, mac, proksiler)
                         time.sleep(0.05)
                 telegrama_gonder("✅ <b>MAC tarama bitti</b>")
+            else:
+                print("[i] MAC listesi veya Panel listesi boş olduğu için MAC taraması atlandı.")
 
+            # M3U Tarama Kontrolü
             if combolar and paneller:
                 telegrama_gonder("⏳ <b>M3U tarama başlatıldı</b>")
                 for panel in paneller:
@@ -160,11 +163,13 @@ def arka_plan_tarayici():
                         m3u_tara(panel, user, pas, proksiler)
                         time.sleep(0.05)
                 telegrama_gonder("✅ <b>M3U tarama bitti</b>")
+            else:
+                print("[i] Combo listesi veya Panel listesi boş olduğu için M3U taraması atlandı.")
 
             time.sleep(300)
 
         except Exception as e:
-            print(f"[!] Hata: {e}")
+            telegrama_gonder(f"❌ <b>Döngü Hatası:</b> {e}")
             time.sleep(30)
 
 if __name__ == '__main__':
