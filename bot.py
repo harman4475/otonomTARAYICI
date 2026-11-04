@@ -13,9 +13,9 @@ app = Flask('')
 def home():
     return "IPTV Bot Aktif ve 7/24 Bulutta Çalışıyor!"
 
-# --- TELEGRAM AYARLARI ---
-TOKEN = "9296501081:AAGTNmvWB8Qn8-kVxGNoJcC8LXTLb8lnZ94"
-CHAT_ID = "39743305"
+# --- TELEGRAM AYARLARI (GÜNCELLENDİ) ---
+TOKEN = "9296501081:AAG8COydawvxX-TfAEArbG-SdEtliP6WODM"
+CHAT_ID = "-1003901042500"
 
 def telegrama_gonder(mesaj):
     try:
