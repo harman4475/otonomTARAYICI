@@ -1,2 +1,3 @@
 mybusines.space:80
-103.205.18.126:80
+mtr3.pro:8080
+siberiax.uk:8080
