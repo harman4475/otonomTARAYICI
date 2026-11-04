@@ -18,9 +18,9 @@ def home():
 def run_web():
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
 
-# --- TELEGRAM BİLDİRİM AYARLARI ---
-TOKEN = "9296501081:AAGTNmvWB8Qn8-kVxGNoJcC8LXTLb8lnZ94"
-CHAT_ID = "39743305"
+# --- TELEGRAM BİLDİRİM AYARLARI (DÜZELTİLDİ) ---
+TOKEN = "9296501081:AAG8COydawvxX-TfAEArbG-SdEtliP6WODM"
+CHAT_ID = "-1003901042500"
 
 def telegrama_gonder(mesaj):
     try:
