@@ -8,3 +8,4 @@ darkcivi.ddns.net:80
 febxp.candymarta.com:80
 51.222.111.105:25461
 frutta.selfip.co:80
+onep01.asia:80
