@@ -17,7 +17,7 @@ def home():
     return "IPTV Bot Aktif ve Hızlı (Multi-Thread) Modda Çalışıyor!"
 
 TOKEN = "9296501081:AAG8COydawvxX-TfAEArbG-SdEtliP6WODM"
-CHAT_ID = "-1003901042500"
+CHAT_ID = "-1004350622098"  # Yeni kanal adresinle güncellendi
 
 def telegrama_gonder(mesaj):
     try:
@@ -25,7 +25,6 @@ def telegrama_gonder(mesaj):
         data = {"chat_id": CHAT_ID, "text": mesaj, "parse_mode": "HTML"}
         res = requests.post(url, data=data, timeout=10)
         
-        # Telegram yanıtını kontrol edelim (Spam veya hata varsa konsola yazdırsın)
         if res.status_code != 200:
             print(f"[!] Telegram mesajı iletilemedi! Kod: {res.status_code}, Cevap: {res.text}")
         else:
