@@ -36,17 +36,17 @@ def telegrama_gonder(mesaj):
     except Exception as e:
         print(f"[!] Telegram bağlantı hatası: {e}")
 
-# ==================== HER 30 DAKİKADA BİR RESMİ ÇOK DİLLİ BİLGİLENDİRME ====================
+# ==================== HER 30 DAKİKADA BİR ÇOK DİLLİ DUYURU ====================
 def cok_dilli_post_gonderici():
     cok_dilli_mesaj = (
-        "🌐 <b>GLOBAL M3U & MAC HUB — RESMİ BİLGİLENDİRME</b>\n\n"
-        "🇹🇷 <b>TR:</b> 7/24 kesintisiz M3U & MAC veri akışı aktiftir. Bildirimlerinizi açık tutunuz.\n"
-        "🇬🇧 <b>EN:</b> 24/7 continuous M3U & MAC data feed is active. Please keep notifications enabled.\n"
-        "🇩🇪 <b>DE:</b> Der durchgehende 24/7 M3U & MAC Datenstrom ist aktiv. Bitte Benachrichtigungen aktivieren.\n"
-        "🇮🇹 <b>IT:</b> Il flusso di dati M3U e MAC 24/7 è attivo. Si prega di attivare le notifiche.\n"
-        "🇷🇺 <b>RU:</b> Круглосуточный поток данных M3U и MAC активен. Пожалуйста, включите уведомления.\n"
-        "🇸🇦 <b>AR:</b> تدفق بيانات M3U & MAC النشط على مدار 24/7. يرجى تفعيل الإشعارات.\n"
-        "🇮🇳 <b>HI:</b> 24/7 निरंतर M3U और MAC डेटा फ़ीड सक्रिय है। कृपया सूचनाएं सक्षम रखें।\n\n"
+        "🌐 <b>GLOBAL M3U & MAC HUB — BILGILENDIRME</b>\n\n"
+        "🇹🇷 <b>TR:</b> 7/24 güncel M3U & MAC verileri aktiftir. Bildirimleri açabilirsiniz.\n"
+        "🇬🇧 <b>EN:</b> 24/7 live M3U & MAC updates active. Turn on notifications.\n"
+        "🇩🇪 <b>DE:</b> 24/7 M3U & MAC Updates aktiv. Benachrichtigungen aktivieren.\n"
+        "🇮🇹 <b>IT:</b> Aggiornamenti M3U e MAC 24/7 attivi. Attiva le notifiche.\n"
+        "🇷🇺 <b>RU:</b> Круглосуточные обновления M3U и MAC активны. Включите уведомления.\n"
+        "🇸🇦 <b>AR:</b> تحديثات M3U & MAC نشطة 24/7. قم بتفعيل الإشعارات.\n"
+        "🇮🇳 <b>HI:</b> 24/7 लाइव M3U और MAC अपडेट सक्रिय हैं। सूचनाएं चालू करें。\n\n"
         "🌐 <b>Global M3U & MAC Hub</b>"
     )
     
@@ -54,7 +54,7 @@ def cok_dilli_post_gonderici():
     
     while True:
         try:
-            print("[i] 30 dakikalık resmi bilgilendirme mesajı gönderiliyor...")
+            print("[i] 30 dakikalık çok dilli bilgilendirme mesajı gönderiliyor...")
             telegrama_gonder(cok_dilli_mesaj)
         except Exception as e:
             print(f"[!] Çok dilli post gönderim hatası: {e}")
@@ -172,12 +172,9 @@ def arka_plan_tarayici():
     print("[*] Gelişmiş Çok Fonksiyonlu Tarayıcı Başlatıldı...")
     time.sleep(2)
     
-    # KOMUTA MERKEZİ BAŞLANGIÇ BİLDİRİMİ
+    # 1. STARTING BİLDİRİMİ
     telegrama_gonder(
-        "🚨 <b>KOMUTA MERKEZİ — SİSTEM AKTİF</b>\n"
-        "────────────────────────\n"
-        "📊 <b>Operasyon Durumu:</b> Ana Veri Havuzu Devrede\n"
-        "🛡️ <b>Güvenlik / Mod:</b> 7/24 Kesintisiz Frekans Analizi\n"
+        "🚀 <b>STARTING</b>\n"
         "────────────────────────\n"
         "🌐 <b>Global M3U & MAC Hub</b>"
     )
@@ -233,15 +230,6 @@ def arka_plan_tarayici():
                                         combolar.append((user, pas))
 
                         print(f"[i] Toplam {len(combolar)} hesap, {len(paneller)} farklı panel ile çapraz taranıyor...")
-                        
-                        # AKTİF TARAMA BAŞLANGICI BİLDİRİMİ
-                        telegrama_gonder(
-                            "📡 <b>OPERASYON BAŞLATILDI — CANLI AKIŞ</b>\n"
-                            "────────────────────────\n"
-                            "📊 <i>Küresel veri akışı ve aktif frekans taraması yürütülüyor.</i>\n"
-                            "────────────────────────\n"
-                            "🌐 <b>Global M3U & MAC Hub</b>"
-                        )
 
                         chunk_size = 1000
                         toplam_chunk = (len(combolar) + chunk_size - 1) // chunk_size
@@ -262,18 +250,25 @@ def arka_plan_tarayici():
                             time.sleep(0.5)
         
             print("\n[i] Tarama turu tamamlandı, 10 dakika sonra tekrar dönecek...")
-            # PERİYODİK BEKLEME BİLDİRİMİ
+            
+            # 2. FINISHED BİLDİRİMİ
             telegrama_gonder(
-                "⏸️ <b>DÖNGÜ TAMAMLANDI — BEKLEME PROSEDÜRÜ</b>\n"
-                "────────────────────────\n"
-                "💤 <i>Sistem periyodik bekleme moduna alınmıştır. Yeni tarama kısa süre içinde başlatılacaktır.</i>\n"
+                "✅ <b>FINISHED</b>\n"
                 "────────────────────────\n"
                 "🌐 <b>Global M3U & MAC Hub</b>"
             )
+            
+            # 3. WAITING BİLDİRİMİ (Bekleme periyoduna geçiş)
+            telegrama_gonder(
+                "⏳ <b>WAITING</b>\n"
+                "────────────────────────\n"
+                "🌐 <b>Global M3U & MAC Hub</b>"
+            )
+            
             time.sleep(600)
         except Exception as e:
             print(f"[!] Tarama döngüsü hatası: {e}")
-            telegrama_gonder(f"⚠️ <b>SİSTEM KRİTİK UYARISI: Veri Akışında Hata!</b>\n<code>{e}</code>")
+            telegrama_gonder(f"⚠️ <b>SİSTEM UYARISI: Döngüde Hata!</b>\n<code>{e}</code>")
             time.sleep(30)
 
 if __name__ == '__main__':
