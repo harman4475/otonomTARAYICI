@@ -46,7 +46,7 @@ def cok_dilli_post_gonderici():
         "🇮🇹 <b>IT:</b> Aggiornamenti M3U e MAC 24/7 attivi. Attiva le notifiche.\n"
         "🇷🇺 <b>RU:</b> Круглосуточные обновления M3U и MAC активны. Включите уведомления.\n"
         "🇸🇦 <b>AR:</b> تحديثات M3U & MAC نشطة 24/7. قم بتفعيل الإشعارات.\n"
-        "🇮🇳 <b>HI:</b> 24/7 लाइव M3U और MAC अपडेट सक्रिय हैं। सूचनाएं चालू करें。\n\n"
+        "🇮🇳 <b>HI:</b> 24/7 लाइव म3ू और MAC अपडेट सक्रिय हैं। सूचनाएं चालू करें。\n\n"
         "🌐 <b>Global M3U & MAC Hub</b>"
     )
     
@@ -141,7 +141,9 @@ def m3u_tara_detayli(panel, user, pas):
                 if canli_yayin_test_et(panel, user, pas, first_stream_id):
                     yayin_durumu = "🟢 Çalışıyor (Doğrulandı)"
 
-            m3ulink = f"http://{panel}/get.php?username={user}&password={pas}&type=m3u_plus"
+            # Ham link ve HTML için & işaretini &amp; yapıyoruz
+            raw_m3ulink = f"http://{panel}/get.php?username={user}&password={pas}&type=m3u_plus"
+            html_m3ulink = raw_m3ulink.replace('&', '&amp;')
             
             mesaj = (
                 f"<b>🔥 YENİ IPTV HİT YAKALANDI! 🔥</b>\n"
@@ -159,7 +161,7 @@ def m3u_tara_detayli(panel, user, pas):
                 f"🎬 <b>Kanal:</b> <code>{kanalsayisi}</code> | <b>Film:</b> <code>{filmsayisi}</code> | <b>Dizi:</b> <code>{dizisayisi}</code>\n"
                 f"────────────────────────\n"
                 f"🔗 <b>M3U Plus Link:</b>\n"
-                f"<code>{m3ulink}</code>"
+                f"<a href='{html_m3ulink}'>{raw_m3ulink}</a>"
             )
             
             telegrama_gonder(mesaj)
@@ -172,7 +174,6 @@ def arka_plan_tarayici():
     print("[*] Gelişmiş Çok Fonksiyonlu Tarayıcı Başlatıldı...")
     time.sleep(2)
     
-    # 1. STARTING BİLDİRİMİ
     telegrama_gonder(
         "🚀 <b>STARTING</b>\n"
         "────────────────────────\n"
@@ -251,14 +252,12 @@ def arka_plan_tarayici():
         
             print("\n[i] Tarama turu tamamlandı, 10 dakika sonra tekrar dönecek...")
             
-            # 2. FINISHED BİLDİRİMİ
             telegrama_gonder(
                 "✅ <b>FINISHED</b>\n"
                 "────────────────────────\n"
                 "🌐 <b>Global M3U & MAC Hub</b>"
             )
             
-            # 3. WAITING BİLDİRİMİ (Bekleme periyoduna geçiş)
             telegrama_gonder(
                 "⏳ <b>WAITING</b>\n"
                 "────────────────────────\n"
