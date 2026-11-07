@@ -44,7 +44,7 @@ def resimli_global_post_gonder():
         "🇬🇧 <b>EN:</b> 24/7 live M3U & MAC updates active! Turn on notifications.\n"
         "🇩🇪 <b>DE:</b> 24/7 M3U & MAC Updates aktiv! Benachrichtigungen aktivieren.\n"
         "🇮🇹 <b>IT:</b> Aggiornamenti M3U e MAC 24/7 attivi! Attiva le notifiche.\n"
-        "🇷🇺 <b>RU:</b> Круглосуточные обновления M3U и MAC активны! Включите уведомления.\n"
+        "🇷🇺 <b>RU:</b> Круглосуточные обновления M3U & MAC активны! Включите уведомления.\n"
         "🇸🇦 <b>AR:</b> تحديثات M3U & MAC نشطة 24/7! قم بتفعيل الإشعارات.\n"
         "🇮🇳 <b>HI:</b> 24/7 लाइव M3U और MAC अपडेट सक्रिय हैं! सूचनाएं चालू करें。\n\n"
         "🌐 <b>Global M3U & MAC Hub</b>"
@@ -66,22 +66,25 @@ def resimli_global_post_gonder():
                 print("[!] Uyarı: Görsel bulunamadı, metin gönderiliyor...")
                 telegrama_gonder(altyazi)
             else:
-                print(f"[i] Görsel gönderiliyor: {os.path.basename(bulunan_resim)}")
+                dosya_adi = os.path.basename(bulunan_resim)
+                print(f"[i] Görsel Telegram'a yükleniyor: {dosya_adi}")
                 url = f"https://api.telegram.org/bot{TOKEN}/sendPhoto"
                 
-                with open(bulunan_resim, 'rb') as photo:
-                    files = {'photo': photo}
+                # Doğru binary form-data payload yapısı
+                with open(bulunan_resim, 'rb') as photo_file:
+                    files = {'photo': (dosya_adi, photo_file, 'image/jpeg')}
                     data = {
                         'chat_id': CHAT_ID,
                         'caption': altyazi,
                         'parse_mode': 'HTML'
                     }
-                    response = requests.post(url, files=files, data=data, timeout=25)
+                    response = requests.post(url, files=files, data=data, timeout=30)
                 
                 if response.status_code == 200:
                     print("[+] Görsel ve duyuru başarıyla gönderildi.")
                 else:
-                    print(f"[!] Görsel gönderilemedi (Kod: {response.status_code}), metin deneniyor...")
+                    print(f"[!] Telegram görseli reddetti (Kod: {response.status_code}): {response.text}")
+                    print("[!] Metin yedek olarak gönderiliyor...")
                     telegrama_gonder(altyazi)
 
         except Exception as e:
