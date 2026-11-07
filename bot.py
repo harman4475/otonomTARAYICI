@@ -143,7 +143,9 @@ def m3u_tara_detayli(panel, user, pas):
 def arka_plan_tarayici():
     print("[*] Gelişmiş Çok Fonksiyonlu Tarayıcı Başlatıldı...")
     time.sleep(2)
-    telegrama_gonder("🚀 <b>IPTV Tarayıcı Aktif!</b>\n⚡ Tüm Paneller Sırayla Taranıyor.")
+    
+    # KESİN BİLDİRİM: Kodun çalıştığını anlaman için ilk açılışta hemen mesaj atar
+    telegrama_gonder("🚀 <b>IPTV Tarayıcı Başlatıldı ve Aktif!</b>\n⚡ Paneller ve Combolar taranmaya başlandı.")
     
     combo_dir = os.path.join(BASE_DIR, 'combo')
     panel_dir = os.path.join(BASE_DIR, 'panel_list')
@@ -159,12 +161,10 @@ def arka_plan_tarayici():
                             for line in pf:
                                 line = line.strip()
                                 if line and not line.startswith('#'):
-                                    # HTTP, HTTPS ve yabancı path artıklarını tertemiz temizle
                                     p_clean = line.replace('http://', '').replace('https://', '').split('/')[0].strip()
                                     if p_clean:
                                         paneller.append(p_clean)
 
-            # Eğer panel bulunamazsa veya dosya boşsa senin gönderdiğin aktif panelleri yedek olarak ekle
             if not paneller:
                 paneller = [
                     "darktv.eu:25461",
@@ -199,6 +199,9 @@ def arka_plan_tarayici():
 
                         print(f"[i] Toplam {len(combolar)} hesap, {len(paneller)} farklı panel ile çapraz taranıyor...")
                         
+                        # Tarama turunun başladığını da Telegram'a raporlayalım ki haberdar ol
+                        telegrama_gonder(f"🔄 <b>Tarama Döngüsü Başladı!</b>\n📁 Dosya: {dosya_adi}\n👥 Hesap: {len(combolar)} | 🌐 Panel: {len(paneller)}")
+
                         chunk_size = 1000
                         toplam_chunk = (len(combolar) + chunk_size - 1) // chunk_size
                         
@@ -218,9 +221,11 @@ def arka_plan_tarayici():
                             time.sleep(0.5)
         
             print("\n[i] Tarama turu tamamlandı, 10 dakika sonra tekrar dönecek...")
+            telegrama_gonder("⏳ <b>Tarama Turu Tamamlandı.</b>\n💤 Sistem 10 dakika bekleme moduna geçti.")
             time.sleep(600)
         except Exception as e:
             print(f"[!] Tarama döngüsü hatası: {e}")
+            telegrama_gonder(f"⚠️ <b>Tarama Döngüsünde Hata Oluştu!</b>\n<code>{e}</code>")
             time.sleep(30)
 
 if __name__ == '__main__':
