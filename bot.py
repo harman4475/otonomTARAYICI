@@ -36,9 +36,9 @@ def telegrama_gonder(mesaj):
     except Exception as e:
         print(f"[!] Telegram bağlantı hatası: {e}")
 
-# ==================== HER 30 DAKİKADA BİR RESİMLİ ÇOK DİLLİ DUYURU ====================
-def resimli_global_post_gonder():
-    altyazi = (
+# ==================== HER 30 DAKİKADA BİR METİN TABANLI ÇOK DİLLİ DUYURU ====================
+def cok_dilli_post_gonderici():
+    cok_dilli_mesaj = (
         "🚀 <b>GLOBAL M3U & MAC HUB — 24/7 LIVE FEED</b>\n\n"
         "🇹🇷 <b>TR:</b> 7/24 güncel M3U & MAC paylaşımları aktif! Bildirimleri açmayı unutmayın.\n"
         "🇬🇧 <b>EN:</b> 24/7 live M3U & MAC updates active! Turn on notifications.\n"
@@ -55,41 +55,10 @@ def resimli_global_post_gonder():
     
     while True:
         try:
-            # Klasördeki uzantısı resim olan ilk dosyayı güvenli şekilde bulur
-            bulunan_resim = None
-            for dosya in os.listdir(BASE_DIR):
-                if dosya.lower().endswith(('.png', '.jpg', '.jpeg')):
-                    bulunan_resim = os.path.join(BASE_DIR, dosya)
-                    break
-            
-            if not bulunan_resim or not os.path.exists(bulunan_resim):
-                print("[!] Uyarı: Görsel bulunamadı, metin gönderiliyor...")
-                telegrama_gonder(altyazi)
-            else:
-                dosya_adi = os.path.basename(bulunan_resim)
-                print(f"[i] Görsel Telegram'a yükleniyor: {dosya_adi}")
-                
-                # KRİTİK DÜZELTME: sendMessage yerine sendPhoto uç noktası kullanıldı!
-                url = f"https://api.telegram.org/bot{TOKEN}/sendPhoto"
-                
-                with open(bulunan_resim, 'rb') as photo_file:
-                    files = {'photo': (dosya_adi, photo_file, 'image/jpeg')}
-                    data = {
-                        'chat_id': CHAT_ID,
-                        'caption': altyazi,
-                        'parse_mode': 'HTML'
-                    }
-                    response = requests.post(url, files=files, data=data, timeout=30)
-                
-                if response.status_code == 200:
-                    print("[+] Görsel ve duyuru başarıyla gönderildi.")
-                else:
-                    print(f"[!] Telegram görseli reddetti (Kod: {response.status_code}): {response.text}")
-                    print("[!] Metin yedek olarak gönderiliyor...")
-                    telegrama_gonder(altyazi)
-
+            print("[i] 30 dakikalık çok dilli bilgilendirme mesajı gönderiliyor...")
+            telegrama_gonder(cok_dilli_mesaj)
         except Exception as e:
-            print(f"[!] Görsel gönderim döngüsünde hata: {e}")
+            print(f"[!] Çok dilli post gönderim hatası: {e}")
             
         # 30 dakika bekler (30 dakika * 60 saniye = 1800 saniye)
         time.sleep(1800)
@@ -292,8 +261,8 @@ if __name__ == '__main__':
     t1.daemon = True
     t1.start()
     
-    # 2. Thread: Her 30 dakikada bir resmi ve çok dilli postu gönderir
-    t2 = threading.Thread(target=resimli_global_post_gonder)
+    # 2. Thread: Her 30 dakikada bir çok dilli duyuruyu gönderir
+    t2 = threading.Thread(target=cok_dilli_post_gonderici)
     t2.daemon = True
     t2.start()
     
