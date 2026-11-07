@@ -4,6 +4,7 @@ import os
 import time
 import datetime
 import requests
+import threading
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 from concurrent.futures import ThreadPoolExecutor, as_completed
@@ -33,6 +34,56 @@ def telegrama_gonder(mesaj):
             print("[+] Telegram bildirimi başarıyla gönderildi.")
     except Exception as e:
         print(f"[!] Telegram bağlantı hatası: {e}")
+
+# ==================== HER 30 DAKİKADA BİR RESİMLİ ÇOK DİLLİ DUYURU ====================
+def resimli_global_post_gonder():
+    resim_adi = "global_hub.png" # Klasörde bulunması gereken resim adı
+    resim_yolu = os.path.join(os.path.dirname(os.path.abspath(__file__)), resim_adi)
+    
+    altyazi = (
+        "🚀 <b>GLOBAL M3U & MAC HUB — 24/7 LIVE FEED</b>\n\n"
+        "🇹🇷 <b>TR:</b> 7/24 güncel M3U & MAC paylaşımları aktif! Bildirimleri açmayı unutmayın.\n"
+        "🇬🇧 <b>EN:</b> 24/7 live M3U & MAC updates active! Turn on notifications.\n"
+        "🇩🇪 <b>DE:</b> 24/7 M3U & MAC Updates aktiv! Benachrichtigungen aktivieren.\n"
+        "🇮🇹 <b>IT:</b> Aggiornamenti M3U e MAC 24/7 attivi! Attiva le notifiche.\n"
+        "🇷🇺 <b>RU:</b> Круглосуточные обновления M3U и MAC активны! Включите уведомления.\n"
+        "🇸🇦 <b>AR:</b> تحديثات M3U & MAC نشطة 24/7! قم بتفعيل الإشعارات.\n"
+        "🇮🇳 <b>HI:</b> 24/7 लाइव M3U और MAC अपडेट सक्रिय हैं! सूचनाएं चालू करें。\n\n"
+        "🌐 <b>Global M3U & MAC Hub</b>"
+    )
+    
+    # Bot ilk açıldığında sistemlerin oturması için 15 saniye bekler
+    time.sleep(15)
+    
+    while True:
+        try:
+            if not os.path.exists(resim_yolu):
+                print(f"[!] Uyarı: {resim_adi} dosyası bulunamadı! Sadece metin gönderiliyor...")
+                telegrama_gonder(altyazi)
+            else:
+                print(f"[i] {resim_adi} görseli ve çok dilli duyuru gönderiliyor...")
+                url = f"https://api.telegram.org/bot{TOKEN}/sendPhoto"
+                
+                with open(resim_yolu, 'rb') as photo:
+                    files = {'photo': photo}
+                    data = {
+                        'chat_id': CHAT_ID,
+                        'caption': altyazi,
+                        'parse_mode': 'HTML'
+                    }
+                    response = requests.post(url, files=files, data=data, timeout=20)
+                
+                if response.status_code == 200:
+                    print("[+] Görsel ve duyuru başarıyla gönderildi.")
+                else:
+                    print(f"[!] Görsel gönderilemedi. Kod: {response.status_code}")
+
+        except Exception as e:
+            print(f"[!] Görsel gönderim döngüsünde hata: {e}")
+            
+        # 30 dakika bekler (30 dakika * 60 saniye = 1800 saniye)
+        time.sleep(1800)
+# ==============================================================================
 
 HEADERd = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/115.0.0.0 Safari/537.36',
@@ -118,7 +169,7 @@ def m3u_tara_detayli(panel, user, pas):
 
             m3ulink = f"http://{panel}/get.php?username={user}&password={pas}&type=m3u_plus"
             
-            # ==================== MODERN TELEGRAM ÇERÇEVE TASARIMI ====================
+            # Modern Telegram Çerçeve Tasarımı
             mesaj = (
                 f"<b>🔥 YENİ IPTV HİT YAKALANDI! 🔥</b>\n"
                 f"────────────────────────\n"
@@ -229,11 +280,15 @@ def arka_plan_tarayici():
             time.sleep(30)
 
 if __name__ == '__main__':
-    import threading
-    t = threading.Thread(type=None, target=arka_plan_tarayici) # orijinal daemon yapısı korunmuştur
-    t = threading.Thread(target=arka_plan_tarayici)
-    t.daemon = True
-    t.start()
+    # 1. Thread: Arka plan otonom tarayıcıyı başlatır
+    t1 = threading.Thread(target=arka_plan_tarayici)
+    t1.daemon = True
+    t1.start()
+    
+    # 2. Thread: Her 30 dakikada bir resmi ve çok dilli postu gönderir
+    t2 = threading.Thread(target=resimli_global_post_gonder)
+    t2.daemon = True
+    t2.start()
     
     print("[*] Flask Web Sunucusu Başlatılıyor...")
     app.run(host='0.0.0.0', port=int(os.environ.get('PORT', 8080)))
