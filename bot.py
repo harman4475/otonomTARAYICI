@@ -68,9 +68,10 @@ def resimli_global_post_gonder():
             else:
                 dosya_adi = os.path.basename(bulunan_resim)
                 print(f"[i] Görsel Telegram'a yükleniyor: {dosya_adi}")
+                
+                # KRİTİK DÜZELTME: sendMessage yerine sendPhoto uç noktası kullanıldı!
                 url = f"https://api.telegram.org/bot{TOKEN}/sendPhoto"
                 
-                # Doğru binary form-data payload yapısı
                 with open(bulunan_resim, 'rb') as photo_file:
                     files = {'photo': (dosya_adi, photo_file, 'image/jpeg')}
                     data = {
